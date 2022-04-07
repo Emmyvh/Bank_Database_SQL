@@ -1,0 +1,12 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+dependencies {
+    implementation files('libs/postgresql-42.3.3.jar')
+}
+
+application {
+    mainClass = 'bank.queries.SQLQueries'
+}

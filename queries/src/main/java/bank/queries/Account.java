@@ -49,7 +49,48 @@ public class Account {
         System.exit(0);
     }
 
-    public void deleteWallet(int accountNumber) {
+    public void updateAccount(int accountNumber, int amount, String accountType, int year, int month, int day,
+            int clientNumber) {
+        Connection connection = null;
+        PreparedStatement statement = null;
+        LocalDate localDate = LocalDate.of(year, month, day);
+
+        try {
+            Class.forName("org.postgresql.Driver");
+            connection = DriverManager
+                    .getConnection("jdbc:postgresql://localhost:5432/Bank_Database", "postgres", "123");
+
+            connection.setAutoCommit(false);
+            System.out.println("Opened database successfully");
+
+            if (connection != null) {
+                String sql = "UPDATE \"Account\" SET(account_number=?, amount=?, account_type=?, opening_date=?, client_number=?) WHERE account_number= ?";
+
+                statement = connection.prepareStatement(sql);
+
+                statement.setInt(1, accountNumber);
+                statement.setInt(2, amount);
+                statement.setString(3, accountType);
+                statement.setObject(4, localDate);
+                statement.setInt(5, clientNumber);
+                statement.setInt(6, accountNumber);
+
+                statement.executeUpdate();
+                System.out.println("Executed query successfully");
+
+                statement.close();
+                connection.commit();
+            }
+            connection.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.err.println(e.getClass().getName() + ": " + e.getMessage());
+            System.out.println("Error in database connection");
+        }
+        System.exit(0);
+    }
+
+    public void deleteAccount(int accountNumber) {
         Connection connection = null;
         PreparedStatement statement = null;
 

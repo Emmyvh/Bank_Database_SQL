@@ -85,6 +85,50 @@ public class Client {
         System.exit(0);
     }
 
+    public void UpdateClient(int clientNumber, String givenName, String prefix, String lastName, String streetName,
+            int houseNumber, int zipCode, String town, int walletNumber) {
+        Connection connection = null;
+        PreparedStatement statement = null;
+
+        try {
+            Class.forName("org.postgresql.Driver");
+            connection = DriverManager
+                    .getConnection("jdbc:postgresql://localhost:5432/Bank_Database", "postgres", "123");
+
+            connection.setAutoCommit(false);
+            System.out.println("Opened database successfully");
+
+            if (connection != null) {
+                String sql = "UPDATE \"Client\" SET (client_number=?, given_name=?, prefix=?, last_name=?, street_name=?, house_number=?, zip_code=?, town=?, wallet_number=?) WHERE client_number = ?";
+
+                statement = connection.prepareStatement(sql);
+
+                statement.setInt(1, clientNumber);
+                statement.setString(2, givenName);
+                statement.setString(3, prefix);
+                statement.setString(4, lastName);
+                statement.setString(5, streetName);
+                statement.setInt(6, houseNumber);
+                statement.setInt(7, zipCode);
+                statement.setString(8, town);
+                statement.setInt(9, walletNumber);
+                statement.setInt(10, clientNumber);
+
+                statement.executeUpdate();
+                System.out.println("Executed query successfully");
+
+                statement.close();
+                connection.commit();
+            }
+            connection.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.err.println(e.getClass().getName() + ": " + e.getMessage());
+            System.out.println("Error in database connection");
+        }
+        System.exit(0);
+    }
+
     public void deleteClient(int clientNumber) {
         Connection connection = null;
         PreparedStatement statement = null;

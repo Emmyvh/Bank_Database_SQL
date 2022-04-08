@@ -5,18 +5,10 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.time.LocalDate;
 
-public class Main {
-    public static void main(String[] args) {
-        Account account = new Account();
-        Client client = new Client();
-        Wallet wallet = new Wallet();
+public class Transaction {
 
-        transferMoney(1, "test", 50, 2022, 4, 8, 2022, 4, 8, 27, 26);
-    }
-
-    public static void transferMoney(int transactionId, String description, int amount, int year, int month, int day,
-            int year2,
-            int month2, int day2, int sender, int receiver) {
+    public void transferMoney(int transactionId, String description, int amount, int year, int month, int day,
+            int year2, int month2, int day2, int sender, int receiver) {
         Connection connection = null;
         PreparedStatement statement = null;
         PreparedStatement statement2 = null;

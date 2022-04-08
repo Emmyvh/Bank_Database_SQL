@@ -8,7 +8,7 @@ CREATE DATABASE "Bank_Database"
 CREATE TABLE "Account"
 (
     account_number integer NOT NULL,
-    amount money,
+    amount numeric,
     account_type text NOT NULL,
     opening_date date,
     client_number integer NOT NULL,
@@ -58,9 +58,24 @@ CREATE TABLE "Transaction"
     date_of_execution date,
     client_number_sender integer,
     client_number_recipient integer,
-    CONSTRAINT autotransaction_id PRIMARY KEY (transaction_id),
+    CONSTRAINT transaction_id PRIMARY KEY (transaction_id),
     CONSTRAINT account_number_recipient FOREIGN KEY (client_number_recipient) REFERENCES "Account" (account_number),
     CONSTRAINT account_number_sender FOREIGN KEY (client_number_sender) REFERENCES "Account" (account_number)
+)
+
+CREATE TABlE "Stored_Transactions"
+(
+    transaction_id integer NOT NULL,
+    transaction_type text,
+    description text,
+    amount integer,
+    date_of_creation date,
+    date_of_execution date,
+    client_number_sender integer,
+    client_number_recipient integer,
+    CONSTRAINT stored_transaction_id PRIMARY KEY (transaction_id),
+    CONSTRAINT stored_account_number_recipient FOREIGN KEY (client_number_recipient) REFERENCES "Account" (account_number),
+    CONSTRAINT stored_account_number_sender FOREIGN KEY (client_number_sender) REFERENCES "Account" (account_number)
 )
 
 CREATE TABLE "Wallet"

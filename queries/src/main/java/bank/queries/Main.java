@@ -3,6 +3,7 @@ package bank.queries;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.time.LocalDate;
 
 public class Main {
@@ -10,19 +11,15 @@ public class Main {
         Account account = new Account();
         Client client = new Client();
         Wallet wallet = new Wallet();
+        Transactions transactions = new Transactions();
 
-        transferMoney(1, "test", 50, 2022, 4, 8, 2022, 4, 8, 27, 26);
+        ExecuteStoredTransaction(1);
+
     }
 
-    public static void transferMoney(int transactionId, String description, int amount, int year, int month, int day,
-            int year2,
-            int month2, int day2, int sender, int receiver) {
+    public static void ExecuteStoredTransaction(int transactionId) {
         Connection connection = null;
         PreparedStatement statement = null;
-        PreparedStatement statement2 = null;
-        PreparedStatement statement3 = null;
-        LocalDate localDate = LocalDate.of(year, month, day);
-        LocalDate localDate2 = LocalDate.of(year2, month2, day2);
 
         try {
             Class.forName("org.postgresql.Driver");
@@ -33,44 +30,25 @@ public class Main {
             System.out.println("Opened database successfully");
 
             if (connection != null) {
-                String sql = "INSERT INTO \"Transaction\" (transaction_id, description, amount, date_of_creation, date_of_execution, client_number_sender, client_number_recipient)"
-                        + "VALUES ( ?, ?, ?, ?, ?, ?, ?)";
-                String sql2 = "UPDATE \"Account\" SET amount = amount-? WHERE account_number = ?";
-                String sql3 = "UPDATE \"Account\" SET amount = amount+? WHERE account_number = ?";
+                String sql = "SELECT FROM \"Stored_Transactions\" WHERE transaction_id = ?";
 
                 statement = connection.prepareStatement(sql);
 
                 statement.setInt(1, transactionId);
-                statement.setString(2, description);
-                statement.setObject(3, amount);
-                statement.setObject(4, localDate);
-                statement.setObject(5, localDate2);
-                statement.setInt(6, sender);
-                statement.setInt(7, receiver);
 
-                int affectedRows = statement.executeUpdate();
-                System.out.println("Created transaction");
+                ResultSet resultset = statement.executeQuery();
+                System.out.println("Collected data");
 
-                if (affectedRows > 0) {
-                    statement2 = connection.prepareStatement(sql2);
-                    statement2.setInt(1, amount);
-                    statement2.setInt(2, sender);
-                    statement2.executeUpdate();
-                    System.out.println("Got money from sender");
-                } else {
-                    connection.rollback();
-                    System.out.println("Rolled back on 2th query");
-                }
+                while (resultset.next()) {
+                    String description = resultset.getString("description");
+                    int amount = resultset.getInt("amount");
+                    LocalDate dateOfCreation = (LocalDate) resultset.getObject("date_of_creation");
+                    LocalDate dateOfExecution = (LocalDate) resultset.getObject("date_of_execution");
+                    int sender = resultset.getInt("client_number_sender");
+                    int receiver = resultset.getInt("client_number_recipient");
 
-                if (affectedRows > 0) {
-                    statement3 = connection.prepareStatement(sql3);
-                    statement3.setInt(1, amount);
-                    statement3.setInt(2, receiver);
-                    statement3.executeUpdate();
-                    System.out.println("Given money to receiver");
-                } else {
-                    connection.rollback();
-                    System.out.println("Rolled back on 3rd query");
+                    System.out.println(description + " " + amount + " " + dateOfCreation + " " + dateOfExecution + " "
+                            + sender + " " + receiver);
                 }
 
                 System.out.println("End of query");
@@ -88,4 +66,5 @@ public class Main {
         }
         System.exit(0);
     }
+
 }

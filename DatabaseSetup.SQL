@@ -48,10 +48,9 @@ CREATE TABLE "Loan"
     CONSTRAINT client_number_owner FOREIGN KEY (client_number) REFERENCES "Client" (client_number)
 )
 
-CREATE TABLE "Transaction"
+CREATE TABLE "Transactions"
 (
     transaction_id integer NOT NULL,
-    transaction_type text,
     description text,
     amount integer,
     date_of_creation date,
@@ -66,7 +65,6 @@ CREATE TABLE "Transaction"
 CREATE TABlE "Stored_Transactions"
 (
     transaction_id integer NOT NULL,
-    transaction_type text,
     description text,
     amount integer,
     date_of_creation date,

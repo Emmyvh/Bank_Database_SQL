@@ -22,7 +22,7 @@ public class Client {
 
             if (connection != null) {
                 String sql = "INSERT INTO \"Client\" (client_number, given_name, prefix, last_name, street_name, house_number, zip_code, town) "
-                        + "VALUES (? ,? , ?, ?, ?, ?, ?, ?);";
+                        + "VALUES (?, ?, ?, ?, ?, ?, ?, ?);";
 
                 statement = connection.prepareStatement(sql);
 

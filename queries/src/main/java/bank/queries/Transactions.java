@@ -26,7 +26,7 @@ public class Transactions {
 
             if (connection != null) {
                 String sql = "BEGIN TRANSACTION;"
-                        + "INSERT INTO \"Transactions\" (transaction_id, description, amount, date_of_creation, date_of_execution, client_number_sender, client_number_recipient)"
+                        + "INSERT INTO \"Transactions\" (transaction_id, description, amount, date_of_creation, date_of_execution, account_number_sender, account_number_recipient)"
                         + "VALUES (?, ?, ?, ?, ?, ?, ?);"
                         + "UPDATE \"Account\" SET amount = amount-? WHERE account_number = ?;"
                         + "UPDATE \"Account\" SET amount = amount+? WHERE account_number = ?;"
@@ -81,7 +81,7 @@ public class Transactions {
             System.out.println("Opened database successfully");
 
             if (connection != null) {
-                String sql = "INSERT INTO \"Stored_Transactions\" (transaction_id, description, amount, date_of_creation, date_of_execution, client_number_sender, client_number_recipient)"
+                String sql = "INSERT INTO \"Stored_Transactions\" (transaction_id, description, amount, date_of_creation, date_of_execution, account_number_sender, account_number_recipient)"
                         + "VALUES ( ?, ?, ?, ?, ?, ?, ?)";
 
                 statement = connection.prepareStatement(sql);
@@ -147,8 +147,8 @@ public class Transactions {
                     amount = result.getInt("amount");
                     dateOfCreation = result.getString("date_of_creation");
                     dateOfExecution = result.getString("date_of_execution");
-                    sender = result.getInt("client_number_sender");
-                    receiver = result.getInt("client_number_recipient");
+                    sender = result.getInt("account_number_sender");
+                    receiver = result.getInt("account_number_recipient");
                 }
 
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-M-d");
@@ -156,7 +156,7 @@ public class Transactions {
                 LocalDate localDateMaturity = LocalDate.parse(dateOfExecution, formatter);
 
                 String sql2 = "BEGIN TRANSACTION;"
-                        + "INSERT INTO \"Transactions\" (transaction_id, description, amount, date_of_creation, date_of_execution, client_number_sender, client_number_recipient)"
+                        + "INSERT INTO \"Transactions\" (transaction_id, description, amount, date_of_creation, date_of_execution, account_number_sender, account_number_recipient)"
                         + "VALUES (?, ?, ?, ?, ?, ?, ?);"
                         + "UPDATE \"Account\" SET amount = amount-? WHERE account_number = ?;"
                         + "UPDATE \"Account\" SET amount = amount+? WHERE account_number = ?;"

@@ -14,6 +14,6 @@ public class Main {
         Transactions transactions = new Transactions();
         Loan loan = new Loan();
 
-        loan.payInstalment(1);
+        client.deleteClient(13);
     }
 }

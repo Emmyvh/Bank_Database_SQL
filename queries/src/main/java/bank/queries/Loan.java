@@ -27,8 +27,11 @@ public class Loan {
             System.out.println("Opened database successfully");
 
             if (connection != null) {
-                String sql = "INSERT INTO \"Outstanding_Loan\" (loan_id, account_number, contra_account, contract_date, maturity_date, original_amount, payment_interval_amount, remaining_amount, payment_interval_days, date_next_instalment)"
-                        + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
+                String sql = "BEGIN TRANSACTION;"
+                        + "INSERT INTO \"Outstanding_Loan\" (loan_id, account_number, contra_account, contract_date, maturity_date, original_amount, payment_interval_amount, remaining_amount, payment_interval_days, date_next_instalment)"
+                        + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);"
+
+                        + "COMMIT;";
 
                 statement = connection.prepareStatement(sql);
 

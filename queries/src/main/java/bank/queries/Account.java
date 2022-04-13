@@ -9,7 +9,7 @@ import java.time.LocalDate;
 public class Account {
 
     public void createAccount(int accountNumber, int amount, String accountType, int year, int month, int day,
-            int clientNumber) {
+            int walletNumber) {
         Connection connection = null;
         PreparedStatement statement = null;
         LocalDate localDate = LocalDate.of(year, month, day);
@@ -23,8 +23,28 @@ public class Account {
             System.out.println("Opened database successfully");
 
             if (connection != null) {
-                String sql = "INSERT INTO \"Account\" (account_number, amount, account_type, opening_date, client_number) "
-                        + "VALUES (? ,? ,?, ?, ?);";
+                String sql = "";
+                if (accountType == "invest") {
+                    sql = "BEGIN TRANSACTION;"
+                            + "INSERT INTO \"Account\" (account_number, amount, account_type, opening_date) "
+                            + "VALUES (? ,? ,? ,?);"
+                            + "UPDATE \"Wallet\" SET account_number_invest = ? WHERE wallet_number = ?;"
+                            + "COMMIT;";
+                } else if (accountType == "savings") {
+                    sql = "BEGIN TRANSACTION;"
+                            + "INSERT INTO \"Account\" (account_number, amount, account_type, opening_date) "
+                            + "VALUES (? ,? ,? ,?);"
+                            + "UPDATE \"Wallet\" SET account_number_savings = ? WHERE wallet_number = ?;"
+                            + "COMMIT;";
+                } else if (accountType == "current") {
+                    sql = "BEGIN TRANSACTION;"
+                            + "INSERT INTO \"Account\" (account_number, amount, account_type, opening_date) "
+                            + "VALUES (? ,? ,? ,?);"
+                            + "UPDATE \"Wallet\" SET account_number_current = ? WHERE wallet_number = ?;"
+                            + "COMMIT;";
+                } else {
+                    System.out.println(accountType + " is not a valid account type");
+                }
 
                 statement = connection.prepareStatement(sql);
 
@@ -32,7 +52,8 @@ public class Account {
                 statement.setInt(2, amount);
                 statement.setString(3, accountType);
                 statement.setObject(4, localDate);
-                statement.setInt(5, clientNumber);
+                statement.setInt(5, accountNumber);
+                statement.setInt(6, walletNumber);
 
                 statement.executeUpdate();
                 System.out.println("Executed query successfully");
@@ -93,6 +114,8 @@ public class Account {
     public void deleteAccount(int accountNumber) {
         Connection connection = null;
         PreparedStatement statement = null;
+        PreparedStatement statement2 = null;
+        String accountType = "";
 
         try {
             Class.forName("org.postgresql.Driver");
@@ -103,13 +126,44 @@ public class Account {
             System.out.println("Opened database successfully");
 
             if (connection != null) {
-                String sql = "DELETE FROM \"Account\" WHERE account_number= ? ";
+
+                String sql = "SELECT * FROM \"Account\" WHERE account_number= ?;";
 
                 statement = connection.prepareStatement(sql);
-
                 statement.setInt(1, accountNumber);
+                ResultSet result = statement.executeQuery();
 
-                statement.executeUpdate();
+                while (result.next()) {
+                    accountType = result.getString("account_type");
+                }
+                System.out.println(accountType);
+
+                System.out.println("collected data");
+
+                String sql2 = "";
+                if (accountType.equals("invest")) {
+                    sql2 = "BEGIN TRANSACTION;"
+                            + "UPDATE \"Wallet\" SET account_number_invest = Null WHERE account_number_invest = ?;"
+                            + "DELETE FROM \"Account\" WHERE account_number = ?;"
+                            + "COMMIT;";
+                } else if (accountType.equals("savings")) {
+                    sql2 = "BEGIN TRANSACTION;"
+                            + "UPDATE \"Wallet\" SET account_number_savings = Null WHERE account_number_savings = ?;"
+                            + "DELETE FROM \"Account\" WHERE account_number = ?;"
+                            + "COMMIT;";
+                } else if (accountType.equals("current")) {
+                    sql2 = "BEGIN TRANSACTION;"
+                            + "UPDATE \"Wallet\" SET account_number_current = Null WHERE account_number_current = ?;"
+                            + "DELETE FROM \"Account\" WHERE account_number = ?;"
+                            + "COMMIT;";
+                } else {
+                    System.out.println("error in retrieved string");
+                }
+
+                statement2 = connection.prepareStatement(sql2);
+                statement2.setInt(1, accountNumber);
+                statement2.setInt(2, accountNumber);
+                statement2.executeQuery();
                 System.out.println("Executed query successfully");
 
                 statement.close();

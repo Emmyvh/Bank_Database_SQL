@@ -5,18 +5,18 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 public class Loan {
 
-    public void createLoan(int loanId, int clientNumber, int accountNumber, int contraAcount, int year,
-            int month, int day,
-            int year2, int month2, int day2, int amountOriginal, int paymentIntervalAmount,
-            int paymentIntervalDays) {
+    public void createLoan(int loanId, int accountNumber, int contraAcount, int year, int month, int day, int year2,
+            int month2, int day2, int amountOriginal, int paymentIntervalAmount, int paymentIntervalDays) {
 
         Connection connection = null;
         PreparedStatement statement = null;
-        LocalDate localDate = LocalDate.of(year, month, day);
-        LocalDate localDate2 = LocalDate.of(year2, month2, day2);
+        LocalDate creation = LocalDate.of(year, month, day);
+        LocalDate maturity = LocalDate.of(year2, month2, day2);
+        LocalDate nextInstalment = LocalDate.of(year, month, (day + paymentIntervalDays));
 
         try {
             Class.forName("org.postgresql.Driver");
@@ -27,21 +27,21 @@ public class Loan {
             System.out.println("Opened database successfully");
 
             if (connection != null) {
-                String sql = "INSERT INTO \"Loan\" (loan_id, client_number, account_number, contra_account, contract_date, maturity_date, Original_amount, payment_interval_amount, remaining_amount, payment_interval_days)"
+                String sql = "INSERT INTO \"Outstanding_Loan\" (loan_id, account_number, contra_account, contract_date, maturity_date, original_amount, payment_interval_amount, remaining_amount, payment_interval_days, date_next_instalment)"
                         + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
 
                 statement = connection.prepareStatement(sql);
 
                 statement.setInt(1, loanId);
-                statement.setInt(2, clientNumber);
-                statement.setObject(3, accountNumber);
-                statement.setObject(4, contraAcount);
-                statement.setObject(5, localDate);
-                statement.setObject(6, localDate2);
-                statement.setInt(7, amountOriginal);
-                statement.setInt(8, paymentIntervalAmount);
-                statement.setInt(9, amountOriginal);
-                statement.setInt(10, paymentIntervalDays);
+                statement.setObject(2, accountNumber);
+                statement.setObject(3, contraAcount);
+                statement.setObject(4, creation);
+                statement.setObject(5, maturity);
+                statement.setInt(6, amountOriginal);
+                statement.setInt(7, paymentIntervalAmount);
+                statement.setInt(8, amountOriginal);
+                statement.setInt(9, paymentIntervalDays);
+                statement.setObject(10, nextInstalment);
 
                 statement.executeUpdate();
                 System.out.println("Created loan");
@@ -62,15 +62,17 @@ public class Loan {
         System.exit(0);
     }
 
-    public static void paymentInstallment(int loanId) {
+    public void payInstalment(int loanId) {
         Connection connection = null;
         PreparedStatement statement = null;
         PreparedStatement statement2 = null;
         PreparedStatement statement3 = null;
-        int amountRemaining = 0;
-        int paymentIntervalAmount = 0;
         int account = 0;
         int contra = 0;
+        int paymentIntervalAmount = 0;
+        int amountRemaining = 0;
+        int paymentIntervalDays = 0;
+        String nextInstalment = "";
 
         try {
             Class.forName("org.postgresql.Driver");
@@ -81,7 +83,7 @@ public class Loan {
             System.out.println("Opened database successfully");
 
             if (connection != null) {
-                String sql = "SELECT * FROM \"Loan\" WHERE loan_id = ?";
+                String sql = "SELECT * FROM \"Outstanding_Loan\" WHERE loan_id = ?";
 
                 statement = connection.prepareStatement(sql);
 
@@ -91,28 +93,37 @@ public class Loan {
                 System.out.println("Collected data");
 
                 while (result.next()) {
-                    amountRemaining = result.getInt("remaining_amount");
-                    paymentIntervalAmount = result.getInt("payment_interval_amount");
                     account = result.getInt("account_number");
                     contra = result.getInt("contra_account");
+                    paymentIntervalAmount = result.getInt("payment_interval_amount");
+                    amountRemaining = result.getInt("remaining_amount");
+                    paymentIntervalDays = result.getInt("payment_interval_days");
+                    nextInstalment = result.getString("date_next_instalment");
                 }
+
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-M-d");
+                LocalDate nextInstalmentdate = LocalDate.parse(nextInstalment, formatter);
+                LocalDate newNextInstalment = nextInstalmentdate.plusDays(paymentIntervalDays);
+                LocalDate today = LocalDate.now();
 
                 statement.close();
 
-                if (amountRemaining <= 0) {
-                    String sql2 = "DELETE FROM \"Loan\" WHERE loan_id = ?";
+                if (amountRemaining <= 0 && newNextInstalment == today) {
+                    String sql2 = "UPDATE \"Outstanding_Loan\" SET date_next_instalment = ? WHERE loan_id = ?";
 
                     statement2 = connection.prepareStatement(sql2);
-                    statement2.setInt(1, loanId);
+
+                    statement2.setObject(1, null);
+                    statement2.setInt(2, loanId);
 
                     statement2.executeUpdate();
-                    System.out.println("Loan is fully payed and has been removed");
+                    System.out.println("Loan is already fully payed");
                     statement2.close();
 
                 } else {
 
                     String sql3 = "BEGIN TRANSACTION;"
-                            + "UPDATE \"Loan\" SET remaining_amount = remaining_amount - ? WHERE loan_id = ?;"
+                            + "UPDATE \"Outstanding_Loan\" SET remaining_amount = remaining_amount - ?, date_next_instalment = ? WHERE loan_id = ?;"
                             + "UPDATE \"Account\" SET amount = amount-? WHERE account_number = ?;"
                             + "UPDATE \"Account\" SET amount = amount+? WHERE account_number = ?;"
                             + "COMMIT;";
@@ -120,14 +131,15 @@ public class Loan {
                     statement3 = connection.prepareStatement(sql3);
 
                     statement3.setInt(1, paymentIntervalAmount);
-                    statement3.setInt(2, loanId);
-                    statement3.setInt(3, paymentIntervalAmount);
-                    statement3.setInt(4, account);
-                    statement3.setInt(5, paymentIntervalAmount);
-                    statement3.setInt(6, contra);
+                    statement3.setObject(2, newNextInstalment);
+                    statement3.setInt(3, loanId);
+                    statement3.setInt(4, paymentIntervalAmount);
+                    statement3.setInt(5, account);
+                    statement3.setInt(6, paymentIntervalAmount);
+                    statement3.setInt(7, contra);
 
                     statement3.executeUpdate();
-                    System.out.println("payed installment");
+                    System.out.println("payed instalment");
                     statement3.close();
                 }
 

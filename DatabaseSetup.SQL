@@ -11,11 +11,7 @@ CREATE TABLE "Account"
     amount numeric,
     account_type text NOT NULL,
     opening_date date,
-    client_number integer NOT NULL,
-    transaction_id integer,
-    CONSTRAINT account_number PRIMARY KEY (account_number),
-    CONSTRAINT client_number_owner FOREIGN KEY (client_number) REFERENCES "Client" (client_number),
-    CONSTRAINT transaction_id FOREIGN KEY (transaction_id) REFERENCES "Transaction" (transaction_id)
+    CONSTRAINT account_number PRIMARY KEY (account_number)
 )
 
 CREATE TABLE "Client"
@@ -30,22 +26,6 @@ CREATE TABLE "Client"
     town text,
     wallet_number integer,
     CONSTRAINT client_number PRIMARY KEY (client_number)
-)
-
-CREATE TABLE "Loan"
-(
-    loan_id integer NOT NULL,
-    client_number integer,
-    account_number integer,
-    contra_account integer,
-    contract_date date,
-    maturity_date date,
-    amount money,
-    payment_interval integer,
-    CONSTRAINT loan_id PRIMARY KEY (loan_id),
-    CONSTRAINT account_number FOREIGN KEY (account_number) REFERENCES "Account" (account_number),
-    CONSTRAINT account_number_contra FOREIGN KEY (contra_account) REFERENCES "Account" (account_number) ,
-    CONSTRAINT client_number_owner FOREIGN KEY (client_number) REFERENCES "Client" (client_number)
 )
 
 CREATE TABLE "Transactions"
@@ -86,4 +66,21 @@ CREATE TABLE "Wallet"
     CONSTRAINT account_number_current FOREIGN KEY (account_number_current) REFERENCES "Account" (account_number),
     CONSTRAINT account_number_invest FOREIGN KEY (account_number_invest) REFERENCES "Account" (account_number),
     CONSTRAINT accoutn_number_savings FOREIGN KEY (account_number_savings) REFERENCES "Account" (account_number)
+)
+
+CREATE TABLE "Outstanding_Loan"
+(
+    loan_id integer NOT NULL,
+    account_number integer,
+    contra_account integer,
+    contract_date date,
+    maturity_date date,
+    original_amount numeric,
+    payment_interval_amount numeric,
+    remaining_amount numeric,
+    payment_interval_days numeric,
+    date_next_installment date,
+    CONSTRAINT loan_id PRIMARY KEY (loan_id),
+    CONSTRAINT account_number FOREIGN KEY (account_number) REFERENCES "Account" (account_number),
+    CONSTRAINT account_number_contra FOREIGN KEY (contra_account) REFERENCES "Account" (account_number)
 )

@@ -5,6 +5,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 public class Transactions {
 
@@ -112,7 +113,7 @@ public class Transactions {
         System.exit(0);
     }
 
-    public static void ExecuteStoredTransaction(int transactionId, int transactionID2) {
+    public void ExecuteStoredTransaction(int transactionId, int transactionID2) {
         Connection connection = null;
         PreparedStatement statement = null;
         PreparedStatement statement2 = null;
@@ -150,16 +151,9 @@ public class Transactions {
                     receiver = result.getInt("client_number_recipient");
                 }
 
-                int year = Integer.parseInt(dateOfCreation.split("-")[0]);
-                int month = Integer.parseInt(dateOfCreation.split("-")[1]);
-                int day = Integer.parseInt(dateOfCreation.split("-")[2]);
-
-                int year2 = Integer.parseInt(dateOfExecution.split("-")[0]);
-                int month2 = Integer.parseInt(dateOfExecution.split("-")[1]);
-                int day2 = Integer.parseInt(dateOfExecution.split("-")[2]);
-
-                LocalDate localDate = LocalDate.of(year, month, day);
-                LocalDate localDate2 = LocalDate.of(year2, month2, day2);
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-M-d");
+                LocalDate localDateCreation = LocalDate.parse(dateOfCreation, formatter);
+                LocalDate localDateMaturity = LocalDate.parse(dateOfExecution, formatter);
 
                 String sql2 = "BEGIN TRANSACTION;"
                         + "INSERT INTO \"Transactions\" (transaction_id, description, amount, date_of_creation, date_of_execution, client_number_sender, client_number_recipient)"
@@ -174,8 +168,8 @@ public class Transactions {
                 statement2.setInt(1, transactionID2);
                 statement2.setString(2, description);
                 statement2.setObject(3, amount);
-                statement2.setObject(4, localDate);
-                statement2.setObject(5, localDate2);
+                statement2.setObject(4, localDateCreation);
+                statement2.setObject(5, localDateMaturity);
                 statement2.setInt(6, sender);
                 statement2.setInt(7, receiver);
                 statement2.setObject(8, amount);
@@ -202,85 +196,4 @@ public class Transactions {
         }
         System.exit(0);
     }
-
-    /*
-     * public static void ExecuteStoredTransaction(int storedId, int newId) {
-     * Connection connection = null;
-     * PreparedStatement statement = null;
-     * PreparedStatement statement2 = null;
-     * String dateOfExecution = null;
-     * LocalDate localDate = null;
-     * 
-     * try {
-     * Class.forName("org.postgresql.Driver");
-     * connection = DriverManager
-     * .getConnection("jdbc:postgresql://localhost:5432/Bank_Database", "postgres",
-     * "123");
-     * 
-     * connection.setAutoCommit(false);
-     * System.out.println("Opened database successfully");
-     * 
-     * if (connection != null) {
-     * String sql =
-     * "SELECT * FROM \"Stored_Transactions\" WHERE transaction_id = ?";
-     * 
-     * statement = connection.prepareStatement(sql);
-     * 
-     * statement.setInt(1, storedId);
-     * 
-     * ResultSet result = statement.executeQuery();
-     * 
-     * while (result.next()) {
-     * dateOfExecution = result.getString("date_of_execution");
-     * }
-     * 
-     * int year = Integer.parseInt(dateOfExecution.split("-")[0]);
-     * int month = Integer.parseInt(dateOfExecution.split("-")[1]);
-     * int day = Integer.parseInt(dateOfExecution.split("-")[2]);
-     * 
-     * localDate = LocalDate.of(year, month, day);
-     * statement.close();
-     * connection.commit();
-     * 
-     * String sql2 = "BEGIN TRANSACTION;"
-     * + "INSERT INTO \"Transactions\" (transaction_id)"
-     * + "VALUES (?);"
-     * +
-     * "UPDATE \"Transactions\" SET description = \"Stored_Transactions\".description, amount = \"Stored_Transactions\".amount, date_of_creation = \"Stored_Transactions\".date_of_creation, date_of_execution = \"Stored_Transactions\".date_of_execution, client_number_sender = \"Stored_Transactions\".client_number_sender, client_number_recipient = \"Stored_Transactions\".client_number_recipient"
-     * +
-     * "FROM \"Stored_Transactions\" WHERE \"Transactions\".transaction_id = ? AND \"Stored_Transactions\".transaction_id = ?;"
-     * +
-     * "UPDATE \"Account\" SET amount = \"Account\".amount - \"Transactions\".amount FROM \"Transactions\" WHERE \"Account\".account_number = \"Transactions\".client_number_sender;"
-     * +
-     * "UPDATE \"Account\" SET amount = \"Account\".amount + \"Transactions\".amount FROM \"Transactions\" WHERE \"Account\".account_number = \"Transactions\".client_number_recipient;"
-     * + "DELETE FROM \"Stored_Transactions\" WHERE transaction_id = ?;"
-     * + "COMMIT;";
-     * 
-     * statement2 = connection.prepareStatement(sql2);
-     * 
-     * statement2.setInt(1, newId);
-     * statement2.setInt(2, newId);
-     * statement2.setInt(3, storedId);
-     * statement2.setInt(4, storedId);
-     * 
-     * statement2.executeUpdate();
-     * 
-     * System.out.println("Created transaction");
-     * 
-     * System.out.println("End of query");
-     * 
-     * statement2.close();
-     * connection.commit();
-     * }
-     * connection.close();
-     * }
-     * 
-     * catch (Exception e) {
-     * e.printStackTrace();
-     * System.err.println(e.getClass().getName() + ": " + e.getMessage());
-     * System.out.println("Error in database connection");
-     * }
-     * System.exit(0);
-     * }
-     */
 }

@@ -1,19 +1,17 @@
 package bank.queries;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.time.LocalDate;
+import java.sql.SQLException;
 
 public class Main {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws SQLException {
         Account account = new Account();
         Client client = new Client();
         Wallet wallet = new Wallet();
         Transactions transactions = new Transactions();
         Loan loan = new Loan();
 
-        client.deleteClient(13);
+        account.selectAccount(26);
+
     }
+
 }

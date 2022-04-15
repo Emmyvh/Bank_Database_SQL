@@ -139,16 +139,101 @@ public class Client {
                 System.out.println(clientNumber + " " + givenName + " " + prefix + " " + lastName + " " + streetName
                         + " " + houseNumber + " " + zipCode + " " + town + " " + walletNumber);
             }
+            statement.close();
+            connection.commit();
         }
         closeConnection();
     }
 
-    public void selectAccounts(int clientNumber) throws SQLException {
+    public void selectCurrentAccount(int clientNumber) throws SQLException {
 
         makeConnection();
 
         if (connection != null) {
 
+            String sql = "SELECT \"Client\".client_number, \"Wallet\".wallet_number, \"Account\".account_number "
+                    + "FROM \"Client\" "
+                    + "INNER JOIN \"Wallet\" ON \"Client\".wallet_number = \"Wallet\".wallet_number "
+                    + "INNER JOIN \"Account\" ON \"Wallet\".account_number_current = \"Account\".account_number "
+                    + "WHERE client_number = ? ";
+
+            statement = connection.prepareStatement(sql);
+
+            statement.setInt(1, clientNumber);
+
+            ResultSet result = statement.executeQuery();
+
+            System.out.println("Executed query successfully");
+
+            while (result.next()) {
+                int account = result.getInt("account_number");
+
+                System.out.println("client number: " + clientNumber + ", Current account: " + account);
+            }
+            statement.close();
+            connection.commit();
+        }
+        closeConnection();
+    }
+
+    public void selectSavingsAccount(int clientNumber) throws SQLException {
+
+        makeConnection();
+
+        if (connection != null) {
+
+            String sql = "SELECT \"Client\".client_number, \"Wallet\".wallet_number, \"Account\".account_number "
+                    + "FROM \"Client\" "
+                    + "INNER JOIN \"Wallet\" ON \"Client\".wallet_number = \"Wallet\".wallet_number "
+                    + "INNER JOIN \"Account\" ON \"Wallet\".account_number_savings = \"Account\".account_number "
+                    + "WHERE client_number = ? ";
+
+            statement = connection.prepareStatement(sql);
+
+            statement.setInt(1, clientNumber);
+
+            ResultSet result = statement.executeQuery();
+
+            System.out.println("Executed query successfully");
+
+            while (result.next()) {
+                int account = result.getInt("account_number");
+
+                System.out.println("client number: " + clientNumber + ", Savings account: " + account);
+            }
+            statement.close();
+            connection.commit();
+        }
+        closeConnection();
+    }
+
+    public void selectInvestmentAccount(int clientNumber) throws SQLException {
+
+        makeConnection();
+
+        if (connection != null) {
+
+            String sql = "SELECT \"Client\".client_number, \"Wallet\".wallet_number, \"Account\".account_number "
+                    + "FROM \"Client\" "
+                    + "INNER JOIN \"Wallet\" ON \"Client\".wallet_number = \"Wallet\".wallet_number "
+                    + "INNER JOIN \"Account\" ON \"Wallet\".account_number_invest = \"Account\".account_number "
+                    + "WHERE client_number = ? ";
+
+            statement = connection.prepareStatement(sql);
+
+            statement.setInt(1, clientNumber);
+
+            ResultSet result = statement.executeQuery();
+
+            System.out.println("Executed query successfully");
+
+            while (result.next()) {
+                int account = result.getInt("account_number");
+
+                System.out.println("client number: " + clientNumber + ", Investment account: " + account);
+            }
+            statement.close();
+            connection.commit();
         }
         closeConnection();
     }

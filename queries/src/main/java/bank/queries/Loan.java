@@ -54,6 +54,8 @@ public class Loan {
             String sql = "BEGIN TRANSACTION;"
                     + "INSERT INTO \"Outstanding_Loan\" (account_number, contra_account, contract_date, maturity_date, original_amount, payment_interval_amount, remaining_amount, payment_interval_days, date_next_instalment)"
                     + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);"
+                    + "UPDATE \"Account\" SET amount = amount - ? WHERE account_number = ?"
+                    + "UPDATE \"Account\" SET amount = amount + ? WHERE account_number = ?"
                     + "COMMIT;";
 
             String sql2 = "BEGIN TRANSACTION;"
@@ -72,6 +74,10 @@ public class Loan {
             statement.setInt(7, amountOriginal);
             statement.setInt(8, paymentIntervalDays);
             statement.setObject(9, nextInstalment);
+            statement.setInt(10, amountOriginal);
+            statement.setInt(11, contraAcount);
+            statement.setInt(12, amountOriginal);
+            statement.setInt(13, accountNumber);
 
             statement2 = connection.prepareStatement(sql2);
             LocalDate newNextInstalment = nextInstalment;

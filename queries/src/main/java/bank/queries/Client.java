@@ -69,20 +69,19 @@ public class Client {
         makeConnection();
 
         if (connection != null) {
-            String sql = "UPDATE \"Client\" SET (client_number=?, given_name=?, prefix=?, last_name=?, street_name=?, house_number=?, zip_code=?, town=?, wallet_number=?) WHERE client_number = ?";
+            String sql = "UPDATE \"Client\" SET (given_name=?, prefix=?, last_name=?, street_name=?, house_number=?, zip_code=?, town=?, wallet_number=?) WHERE client_number = ?";
 
             statement = connection.prepareStatement(sql);
 
-            statement.setInt(1, clientNumber);
-            statement.setString(2, givenName);
-            statement.setString(3, prefix);
-            statement.setString(4, lastName);
-            statement.setString(5, streetName);
-            statement.setInt(6, houseNumber);
-            statement.setInt(7, zipCode);
-            statement.setString(8, town);
-            statement.setInt(9, walletNumber);
-            statement.setInt(10, clientNumber);
+            statement.setString(1, givenName);
+            statement.setString(2, prefix);
+            statement.setString(3, lastName);
+            statement.setString(4, streetName);
+            statement.setInt(5, houseNumber);
+            statement.setInt(6, zipCode);
+            statement.setString(7, town);
+            statement.setInt(8, walletNumber);
+            statement.setInt(9, clientNumber);
 
             statement.executeUpdate();
             System.out.println("Executed query successfully");

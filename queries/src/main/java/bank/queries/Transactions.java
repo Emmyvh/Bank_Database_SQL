@@ -38,7 +38,7 @@ public class Transactions {
         }
     }
 
-    public void transferDirectly(int transactionId, String description, int amount, int year, int month, int day,
+    public void directly(String description, int amount, int year, int month, int day,
             int year2, int month2, int day2, int sender, int receiver) throws SQLException {
 
         LocalDate localDate = LocalDate.of(year, month, day);
@@ -48,25 +48,24 @@ public class Transactions {
 
         if (connection != null) {
             String sql = "BEGIN TRANSACTION;"
-                    + "INSERT INTO \"Transactions\" (transaction_id, description, amount, date_of_creation, date_of_execution, account_number_sender, account_number_recipient)"
-                    + "VALUES (?, ?, ?, ?, ?, ?, ?);"
+                    + "INSERT INTO \"Transactions\" (description, amount, date_of_creation, date_of_execution, account_number_sender, account_number_recipient)"
+                    + "VALUES (?, ?, ?, ?, ?, ?);"
                     + "UPDATE \"Account\" SET amount = amount-? WHERE account_number = ?;"
                     + "UPDATE \"Account\" SET amount = amount+? WHERE account_number = ?;"
                     + "COMMIT;";
 
             statement = connection.prepareStatement(sql);
 
-            statement.setInt(1, transactionId);
-            statement.setString(2, description);
-            statement.setObject(3, amount);
-            statement.setObject(4, localDate);
-            statement.setObject(5, localDate2);
-            statement.setInt(6, sender);
-            statement.setInt(7, receiver);
-            statement.setObject(8, amount);
-            statement.setInt(9, sender);
-            statement.setObject(10, amount);
-            statement.setInt(11, receiver);
+            statement.setString(1, description);
+            statement.setInt(2, amount);
+            statement.setObject(3, localDate);
+            statement.setObject(4, localDate2);
+            statement.setInt(5, sender);
+            statement.setInt(6, receiver);
+            statement.setObject(7, amount);
+            statement.setInt(8, sender);
+            statement.setObject(9, amount);
+            statement.setInt(10, receiver);
 
             statement.executeUpdate();
             System.out.println("Created transaction");
@@ -79,7 +78,7 @@ public class Transactions {
         closeConnection();
     }
 
-    public void transferDelayed(int transactionId, String description, int amount, int year, int month, int day,
+    public void delayed(String description, int amount, int year, int month, int day,
             int year2, int month2, int day2, int sender, int receiver) throws SQLException {
 
         LocalDate localDate = LocalDate.of(year, month, day);
@@ -88,18 +87,17 @@ public class Transactions {
         makeConnection();
 
         if (connection != null) {
-            String sql = "INSERT INTO \"Stored_Transactions\" (transaction_id, description, amount, date_of_creation, date_of_execution, account_number_sender, account_number_recipient)"
-                    + "VALUES ( ?, ?, ?, ?, ?, ?, ?)";
+            String sql = "INSERT INTO \"Stored_Transactions\" (description, amount, date_of_creation, date_of_execution, account_number_sender, account_number_recipient)"
+                    + "VALUES ( ?, ?, ?, ?, ?, ?)";
 
             statement = connection.prepareStatement(sql);
 
-            statement.setInt(1, transactionId);
-            statement.setString(2, description);
-            statement.setObject(3, amount);
-            statement.setObject(4, localDate);
-            statement.setObject(5, localDate2);
-            statement.setInt(6, sender);
-            statement.setInt(7, receiver);
+            statement.setString(1, description);
+            statement.setObject(2, amount);
+            statement.setObject(3, localDate);
+            statement.setObject(4, localDate2);
+            statement.setInt(5, sender);
+            statement.setInt(6, receiver);
 
             statement.executeUpdate();
             System.out.println("Created transaction");
@@ -112,7 +110,7 @@ public class Transactions {
         closeConnection();
     }
 
-    public void ExecuteStoredTransaction(int transactionId, int transactionID2) throws SQLException {
+    public void ExecuteStoredTransaction(int transactionId) throws SQLException {
 
         String description = null;
         int amount = 0;
@@ -146,39 +144,44 @@ public class Transactions {
 
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-M-d");
             LocalDate localDateCreation = LocalDate.parse(dateOfCreation, formatter);
-            LocalDate localDateMaturity = LocalDate.parse(dateOfExecution, formatter);
+            LocalDate localDateExecution = LocalDate.parse(dateOfExecution, formatter);
+            LocalDate today = LocalDate.now();
 
-            String sql2 = "BEGIN TRANSACTION;"
-                    + "INSERT INTO \"Transactions\" (transaction_id, description, amount, date_of_creation, date_of_execution, account_number_sender, account_number_recipient, loant_id)"
-                    + "VALUES (?, ?, ?, ?, ?, ?, ?, ?);"
-                    + "UPDATE \"Account\" SET amount = amount-? WHERE account_number = ?;"
-                    + "UPDATE \"Account\" SET amount = amount+? WHERE account_number = ?;"
-                    + "DELETE FROM \"Stored_Transactions\" WHERE transaction_id = ?;"
-                    + "COMMIT;";
+            if (localDateExecution.equals(today)) {
 
-            statement2 = connection.prepareStatement(sql2);
+                String sql2 = "BEGIN TRANSACTION;"
+                        + "INSERT INTO \"Transactions\" (description, amount, date_of_creation, date_of_execution, account_number_sender, account_number_recipient, loan_id) "
+                        + "VALUES (?, ?, ?, ?, ?, ?, ?);"
+                        + "UPDATE \"Account\" SET amount = amount-? WHERE account_number = ?;"
+                        + "UPDATE \"Account\" SET amount = amount+? WHERE account_number = ?;"
+                        + "DELETE FROM \"Stored_Transactions\" WHERE transaction_id = ?;"
+                        + "COMMIT;";
 
-            statement2.setInt(1, transactionID2);
-            statement2.setString(2, description);
-            statement2.setObject(3, amount);
-            statement2.setObject(4, localDateCreation);
-            statement2.setObject(5, localDateMaturity);
-            statement2.setInt(6, sender);
-            statement2.setInt(7, receiver);
-            statement2.setInt(8, loanId);
-            statement2.setObject(9, amount);
-            statement2.setInt(10, sender);
-            statement2.setObject(11, amount);
-            statement2.setInt(12, receiver);
-            statement2.setInt(13, transactionId);
+                statement2 = connection.prepareStatement(sql2);
 
-            statement2.executeUpdate();
-            System.out.println("Created transaction");
+                statement2.setString(1, description);
+                statement2.setObject(2, amount);
+                statement2.setObject(3, localDateCreation);
+                statement2.setObject(4, localDateExecution);
+                statement2.setInt(5, sender);
+                statement2.setInt(6, receiver);
+                statement2.setInt(7, loanId);
+                statement2.setObject(8, amount);
+                statement2.setInt(9, sender);
+                statement2.setObject(10, amount);
+                statement2.setInt(11, receiver);
+                statement2.setInt(12, transactionId);
 
-            System.out.println("End of query");
+                statement2.executeUpdate();
+                System.out.println("Created transaction");
 
-            statement.close();
-            connection.commit();
+                System.out.println("End of query");
+
+                statement.close();
+                connection.commit();
+            } else {
+                System.out.println("This transaction is not scheduled for today.");
+            }
         }
         closeConnection();
     }

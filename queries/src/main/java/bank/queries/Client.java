@@ -35,25 +35,24 @@ public class Client {
         }
     }
 
-    public void createClient(int clientNumber, String givenName, String prefix, String lastName, String streetName,
+    public void createClient(String givenName, String prefix, String lastName, String streetName,
             int houseNumber, int zipCode, String town) throws SQLException {
 
         makeConnection();
 
         if (connection != null) {
-            String sql = "INSERT INTO \"Client\" (client_number, given_name, prefix, last_name, street_name, house_number, zip_code, town) "
-                    + "VALUES (?, ?, ?, ?, ?, ?, ?, ?);";
+            String sql = "INSERT INTO \"Client\" (given_name, prefix, last_name, street_name, house_number, zip_code, town) "
+                    + "VALUES (?, ?, ?, ?, ?, ?, ?);";
 
             statement = connection.prepareStatement(sql);
 
-            statement.setInt(1, clientNumber);
-            statement.setString(2, givenName);
-            statement.setString(3, prefix);
-            statement.setString(4, lastName);
-            statement.setString(5, streetName);
-            statement.setInt(6, houseNumber);
-            statement.setInt(7, zipCode);
-            statement.setString(8, town);
+            statement.setString(1, givenName);
+            statement.setString(2, prefix);
+            statement.setString(3, lastName);
+            statement.setString(4, streetName);
+            statement.setInt(5, houseNumber);
+            statement.setInt(6, zipCode);
+            statement.setString(7, town);
 
             statement.executeUpdate();
             System.out.println("Executed query successfully");
@@ -144,4 +143,15 @@ public class Client {
         }
         closeConnection();
     }
+
+    public void selectAccounts(int clientNumber) throws SQLException {
+
+        makeConnection();
+
+        if (connection != null) {
+
+        }
+        closeConnection();
+    }
+
 }

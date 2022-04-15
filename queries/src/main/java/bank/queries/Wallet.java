@@ -10,6 +10,8 @@ public class Wallet {
 
     Connection connection = null;
     PreparedStatement statement = null;
+    PreparedStatement statement2 = null;
+    PreparedStatement statement3 = null;
 
     public void makeConnection() {
         try {
@@ -35,30 +37,43 @@ public class Wallet {
         }
     }
 
-    public void createWallet(int walletNumber, int clientNumber) throws SQLException {
+    public void createWallet(int clientNumber) throws SQLException {
+        int walletNumber = 0;
 
         makeConnection();
 
-        connection.setAutoCommit(false);
-        System.out.println("Opened database successfully");
-
         if (connection != null) {
-            String sql = "BEGIN TRANSACTION;"
-                    + "INSERT INTO \"Wallet\" (wallet_number) "
-                    + "VALUES (?);"
-                    + "UPDATE \"Client\" SET wallet_number = ? WHERE client_number = ?;"
-                    + "COMMIT;";
+            String sql = "INSERT INTO \"Wallet\" ";
 
             statement = connection.prepareStatement(sql);
 
-            statement.setInt(1, walletNumber);
-            statement.setInt(2, walletNumber);
-            statement.setInt(3, clientNumber);
+            statement.executeUpdate();
+
+            String sql2 = "SELECT MAX (wallet_number) FROM \"Wallet\"";
+
+            statement2 = connection.prepareStatement(sql2);
+            ResultSet result = statement2.executeQuery();
+
+            while (result.next()) {
+                walletNumber = result.getInt("max");
+            }
+
+            System.out.println(walletNumber);
+
+            String sql3 = "UPDATE \"Client\" SET wallet_number = ? WHERE client_number = ?;";
+
+            statement3 = connection.prepareStatement(sql3);
+
+            statement3.setInt(1, walletNumber);
+            statement3.setInt(2, clientNumber);
 
             statement.executeUpdate();
+
             System.out.println("Executed query successfully");
 
             statement.close();
+            statement2.close();
+            statement3.close();
             connection.commit();
         }
         closeConnection();

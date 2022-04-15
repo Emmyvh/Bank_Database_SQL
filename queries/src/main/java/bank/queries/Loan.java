@@ -39,8 +39,8 @@ public class Loan {
 
     public void createLoan(int loanId, int accountNumber, int contraAcount, int year, int month, int day,
             int year2,
-            int month2, int day2, int amountOriginal, int paymentIntervalAmount, int paymentIntervalDays,
-            int transactionId) throws SQLException {
+            int month2, int day2, int amountOriginal, int paymentIntervalAmount, int paymentIntervalDays)
+            throws SQLException {
 
         LocalDate creation = LocalDate.of(year, month, day);
         LocalDate maturity = LocalDate.of(year2, month2, day2);
@@ -52,39 +52,37 @@ public class Loan {
         if (connection != null) {
 
             String sql = "BEGIN TRANSACTION;"
-                    + "INSERT INTO \"Outstanding_Loan\" (loan_id, account_number, contra_account, contract_date, maturity_date, original_amount, payment_interval_amount, remaining_amount, payment_interval_days, date_next_instalment)"
-                    + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);"
+                    + "INSERT INTO \"Outstanding_Loan\" (account_number, contra_account, contract_date, maturity_date, original_amount, payment_interval_amount, remaining_amount, payment_interval_days, date_next_instalment)"
+                    + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);"
                     + "COMMIT;";
 
             String sql2 = "BEGIN TRANSACTION;"
-                    + "INSERT INTO \"Stored_Transactions\" (transaction_id, description, amount, date_of_creation, date_of_execution, account_number_sender, account_number_recipient, loan_id)"
+                    + "INSERT INTO \"Stored_Transactions\" (description, amount, date_of_creation, date_of_execution, account_number_sender, account_number_recipient, loan_id)"
                     + "VALUES (?, ?, ?, ?, ?, ?, ?, ?);"
                     + "COMMIT;";
 
             statement = connection.prepareStatement(sql);
 
-            statement.setInt(1, loanId);
-            statement.setInt(2, accountNumber);
-            statement.setInt(3, contraAcount);
-            statement.setObject(4, creation);
-            statement.setObject(5, maturity);
-            statement.setInt(6, amountOriginal);
-            statement.setInt(7, paymentIntervalAmount);
-            statement.setInt(8, amountOriginal);
-            statement.setInt(9, paymentIntervalDays);
-            statement.setObject(10, nextInstalment);
+            statement.setInt(1, accountNumber);
+            statement.setInt(2, contraAcount);
+            statement.setObject(3, creation);
+            statement.setObject(4, maturity);
+            statement.setInt(5, amountOriginal);
+            statement.setInt(6, paymentIntervalAmount);
+            statement.setInt(7, amountOriginal);
+            statement.setInt(8, paymentIntervalDays);
+            statement.setObject(9, nextInstalment);
 
             statement2 = connection.prepareStatement(sql2);
             LocalDate newNextInstalment = nextInstalment;
 
-            statement2.setInt(1, transactionId);
-            statement2.setString(2, "loan instalment");
-            statement2.setInt(3, paymentIntervalAmount);
-            statement2.setObject(4, creation);
-            statement2.setObject(5, newNextInstalment);
-            statement2.setInt(6, accountNumber);
-            statement2.setInt(7, contraAcount);
-            statement2.setInt(8, loanId);
+            statement2.setString(1, "loan instalment");
+            statement2.setInt(2, paymentIntervalAmount);
+            statement2.setObject(3, creation);
+            statement2.setObject(4, newNextInstalment);
+            statement2.setInt(5, accountNumber);
+            statement2.setInt(6, contraAcount);
+            statement2.setInt(7, loanId);
 
             statement.executeUpdate();
             System.out.println("Created loan");
@@ -94,19 +92,17 @@ public class Loan {
             numberOfIntervals--;
 
             while (numberOfIntervals > 0) {
-                transactionId++;
                 newNextInstalment = newNextInstalment.plusDays(paymentIntervalDays);
 
                 statement3 = connection.prepareStatement(sql2);
 
-                statement3.setInt(1, transactionId);
-                statement3.setString(2, "loan instalment");
-                statement3.setInt(3, paymentIntervalAmount);
-                statement3.setObject(4, creation);
-                statement3.setObject(5, newNextInstalment);
-                statement3.setInt(6, accountNumber);
-                statement3.setInt(7, contraAcount);
-                statement3.setInt(8, loanId);
+                statement3.setString(1, "loan instalment");
+                statement3.setInt(2, paymentIntervalAmount);
+                statement3.setObject(3, creation);
+                statement3.setObject(4, newNextInstalment);
+                statement3.setInt(5, accountNumber);
+                statement3.setInt(6, contraAcount);
+                statement3.setInt(7, loanId);
 
                 statement3.executeUpdate();
                 System.out.println("Created stored transaction");

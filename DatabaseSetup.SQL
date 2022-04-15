@@ -7,7 +7,7 @@ CREATE DATABASE "Bank_Database"
 
 CREATE TABLE "Account"
 (
-    account_number integer NOT NULL,
+    account_number integer NOT NULL DEFAULT nextval('test_id_seq12'::regclass),
     amount numeric,
     account_type text NOT NULL,
     opening_date date,
@@ -16,7 +16,7 @@ CREATE TABLE "Account"
 
 CREATE TABLE "Client"
 (
-    client_number integer NOT NULL,
+    client_number integer NOT NULL DEFAULT nextval('test_id_seq7'::regclass),
     given_name text,
     prefix text,
     last_name text,
@@ -30,7 +30,7 @@ CREATE TABLE "Client"
 
 CREATE TABLE "Transactions"
 (
-    transaction_id integer NOT NULL,
+    transaction_id integer NOT NULL DEFAULT nextval('test_id_seq5'::regclass),
     description text,
     amount integer,
     date_of_creation date,
@@ -45,7 +45,7 @@ CREATE TABLE "Transactions"
 
 CREATE TABlE "Stored_Transactions"
 (
-    transaction_id integer NOT NULL,
+    transaction_id integer NOT NULL DEFAULT nextval('test_id_seq6'::regclass),
     description text,
     amount integer,
     date_of_creation date,
@@ -58,7 +58,7 @@ CREATE TABlE "Stored_Transactions"
     CONSTRAINT loan_id FOREIGN KEY (loan_id) REFERENCES "Outstanding_loan" (loan_id)
 )
 
-CREATE TABLE "Wallet"
+CREATE TABLE "Wallet DEFAULT nextval('test_id_seq9'::regclass)"
 (
     wallet_number integer NOT NULL,
     account_number_current integer,
@@ -72,7 +72,7 @@ CREATE TABLE "Wallet"
 
 CREATE TABLE "Outstanding_Loan"
 (
-    loan_id integer NOT NULL,
+    loan_id integer NOT NULL DEFAULT nextval('test_id_seq'::regclass),
     account_number integer,
     contra_account integer,
     contract_date date,

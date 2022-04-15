@@ -10,8 +10,6 @@ public class Main {
         Transactions transactions = new Transactions();
         Loan loan = new Loan();
 
-        account.selectAccount(26);
-
     }
 
 }

@@ -8,5 +8,7 @@ dependencies {
 }
 
 application {
-    mainClass = 'bank.queries.SQLQueries'
+    mainClass = 'bank.queries.Main'
 }
+
+version = '0.0.1'

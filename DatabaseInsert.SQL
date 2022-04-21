@@ -93,118 +93,26 @@ WHERE (client_number = 10)
 INSERT INTO "Account"
     (account_number, amount, account_type, opening_date, client_number)
 VALUES
-    ('1', '100', 'current', '06-04-2022'),
-    ('2', '5000', 'savings', '06-04-2022'),
-    ('3', '450', 'current', '06-04-2022'),
-    ('4', '2365', 'savings', '06-04-2022'),
-    ('5', '857', 'current', '06-04-2022'),
-    ('6', '9845', 'savings', '06-04-2022'),
-    ('7', '834', 'current', '06-04-2022'),
-    ('8', '2384', 'savings', '06-04-2022'),
-    ('9', '384', 'current', '06-04-2022'),
-    ('10', '38745', 'savings', '06-04-2022'),
-    ('11', '393', 'currents', '06-04-2022'),
-    ('12', '2874', 'savings', '06-04-2022'),
-    ('13', '546', 'current', '06-04-2022'),
-    ('14', '3874', 'savings', '06-04-2022'),
-    ('15', '874', 'current', '06-04-2022'),
-    ('16', '83479', 'savings', '06-04-2022'),
-    ('17', '932', 'current', '06-04-2022'),
-    ('18', '8237', 'savings', '06-04-2022'),
-    ('19', '747', 'current', '06-04-2022'),
-    ('20', '1562', 'savings', '06-04-2022'),
-    ('21', '13820', 'invest', '06-04-2022'),
-    ('22', '3784', 'invest', '06-04-2022'),
-    ('23', '38472', 'invest', '06-04-2022')
-
-UPDATE "Wallet"
-SET account_number_current = 1
-WHERE (wallet_number = 1)
-
-UPDATE "Wallet"
-SET account_number_current = 3
-WHERE (wallet_number=2)
-
-UPDATE "Wallet"
-SET account_number_current = 5
-WHERE (wallet_number=3)
-
-UPDATE "Wallet"
-SET account_number_current = 7
-WHERE (wallet_number=4)
-
-UPDATE "Wallet"
-SET account_number_current = 9
-WHERE (wallet_number=5)
-
-UPDATE "Wallet"
-SET account_number_current = 11
-WHERE (wallet_number=6)
-
-UPDATE "Wallet"
-SET account_number_current = 13
-WHERE (wallet_number=7)
-
-UPDATE "Wallet"
-SET account_number_current = 15
-WHERE (wallet_number=8)
-
-UPDATE "Wallet"
-SET account_number_current = 17
-WHERE (wallet_number=9)
-
-UPDATE "Wallet"
-SET account_number_current = 19
-WHERE (wallet_number=10)
-
-UPDATE "Wallet"
-SET account_number_savings = 2
-WHERE (wallet_number=1)
-
-UPDATE "Wallet"
-SET account_number_savings = 4
-WHERE (wallet_number=2)
-
-UPDATE "Wallet"
-SET account_number_savings = 6
-WHERE (wallet_number=3)
-
-UPDATE "Wallet"
-SET account_number_savings = 8
-WHERE (wallet_number=4)
-
-UPDATE "Wallet"
-SET account_number_savings = 10
-WHERE (wallet_number=5)
-
-UPDATE "Wallet"
-SET account_number_savings = 12
-WHERE (wallet_number=6)
-
-UPDATE "Wallet"
-SET account_number_savings = 14
-WHERE (wallet_number=7)
-
-UPDATE "Wallet"
-SET account_number_savings = 16
-WHERE (wallet_number=8)
-
-UPDATE "Wallet"
-SET account_number_savings = 18
-WHERE (wallet_number=9)
-
-UPDATE "Wallet"
-SET account_number_savings = 20
-WHERE (wallet_number=10)
-
-UPDATE "Wallet"
-SET account_number_invest = 21
-WHERE (wallet_number=5)
-
-UPDATE "Wallet"
-SET account_number_invest = 22
-WHERE (wallet_number=7)
-
-UPDATE "Wallet"
-SET account_number_invest = 23
-WHERE (wallet_number=8)
+    ('1', '100', 'current', '06-04-2022', '1'),
+    ('2', '5000', 'savings', '06-04-2022', '1'),
+    ('3', '450', 'current', '06-04-2022', '2'),
+    ('4', '2365', 'savings', '06-04-2022', '2'),
+    ('5', '857', 'current', '06-04-2022', '3'),
+    ('6', '9845', 'savings', '06-04-2022', '3'),
+    ('7', '834', 'current', '06-04-2022', '4'),
+    ('8', '2384', 'savings', '06-04-2022', '4'),
+    ('9', '384', 'current', '06-04-2022', '5'),
+    ('10', '38745', 'savings', '06-04-2022', '5'),
+    ('11', '393', 'currents', '06-04-2022', '6'),
+    ('12', '2874', 'savings', '06-04-2022', '6'),
+    ('13', '546', 'current', '06-04-2022', '7'),
+    ('14', '3874', 'savings', '06-04-2022', '7'),
+    ('15', '874', 'current', '06-04-2022', '8'),
+    ('16', '83479', 'savings', '06-04-2022', '8'),
+    ('17', '932', 'current', '06-04-2022', '9'),
+    ('18', '8237', 'savings', '06-04-2022', '9'),
+    ('19', '747', 'current', '06-04-2022', '10'),
+    ('20', '1562', 'savings', '06-04-2022', '10'),
+    ('21', '13820', 'invest', '06-04-2022', '7'),
+    ('22', '3784', 'invest', '06-04-2022', '8'),
+    ('23', '38472', 'invest', '06-04-2022', '9')

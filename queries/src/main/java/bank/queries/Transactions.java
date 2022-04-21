@@ -13,6 +13,7 @@ public class Transactions {
     Connection connection = null;
     PreparedStatement statement = null;
     PreparedStatement statement2 = null;
+    PreparedStatement statement3 = null;
 
     public void makeConnection() {
         try {
@@ -43,6 +44,7 @@ public class Transactions {
 
         LocalDate localDate = LocalDate.of(year, month, day);
         LocalDate localDate2 = LocalDate.of(year2, month2, day2);
+        int transactionId = 0;
 
         makeConnection();
 
@@ -51,11 +53,9 @@ public class Transactions {
                     + "INSERT INTO \"Transactions\" (description, amount, date_of_creation, date_of_execution, account_number_sender, account_number_recipient)"
                     + "VALUES (?, ?, ?, ?, ?, ?);"
                     + "UPDATE \"Account\" SET amount = amount-? WHERE account_number = ?;"
-                    + "UPDATE \"Account\" SET amount = amount+? WHERE account_number = ?;"
-                    + "COMMIT;";
+                    + "UPDATE \"Account\" SET amount = amount+? WHERE account_number = ?;";
 
             statement = connection.prepareStatement(sql);
-
             statement.setString(1, description);
             statement.setInt(2, amount);
             statement.setObject(3, localDate);
@@ -66,16 +66,31 @@ public class Transactions {
             statement.setInt(8, sender);
             statement.setObject(9, amount);
             statement.setInt(10, receiver);
-
             statement.executeUpdate();
-            System.out.println("Created transaction");
 
-            System.out.println("End of query");
+            String sql2 = "SELECT MAX (transaction_id) FROM \"Transactions\"";
+
+            statement2 = connection.prepareStatement(sql2);
+            ResultSet result = statement2.executeQuery();
+            while (result.next()) {
+                transactionId = result.getInt("max");
+            }
+
+            String sql3 = "INSERT INTO \"Processed_Transactions\" (transaction_id)"
+                    + "VALUES (?);"
+                    + "COMMIT;";
+
+            statement3 = connection.prepareStatement(sql3);
+            statement3.setInt(1, transactionId);
+            statement3.executeUpdate();
 
             statement.close();
+            statement2.close();
+            statement3.close();
             connection.commit();
+
+            closeConnection();
         }
-        closeConnection();
     }
 
     public void delayed(String description, int amount, int year, int month, int day,
@@ -87,22 +102,17 @@ public class Transactions {
         makeConnection();
 
         if (connection != null) {
-            String sql = "INSERT INTO \"Stored_Transactions\" (description, amount, date_of_creation, date_of_execution, account_number_sender, account_number_recipient)"
+            String sql = "INSERT INTO \"Transactions\" (description, amount, date_of_creation, date_of_execution, account_number_sender, account_number_recipient)"
                     + "VALUES ( ?, ?, ?, ?, ?, ?)";
 
             statement = connection.prepareStatement(sql);
-
             statement.setString(1, description);
             statement.setObject(2, amount);
             statement.setObject(3, localDate);
             statement.setObject(4, localDate2);
             statement.setInt(5, sender);
             statement.setInt(6, receiver);
-
             statement.executeUpdate();
-            System.out.println("Created transaction");
-
-            System.out.println("End of query");
 
             statement.close();
             connection.commit();
@@ -110,79 +120,61 @@ public class Transactions {
         closeConnection();
     }
 
-    public void ExecuteStoredTransaction(int transactionId) throws SQLException {
+    public void ExecuteStored(int transactionId) throws SQLException {
 
-        String description = null;
         int amount = 0;
-        String dateOfCreation = null;
         String dateOfExecution = null;
         int sender = 0;
         int receiver = 0;
-        int loanId = 0;
 
         makeConnection();
 
         if (connection != null) {
-            String sql = "SELECT * FROM \"Stored_Transactions\" WHERE transaction_id = ?";
+            String sql = "BEGIN TRANSACTION;";
 
             statement = connection.prepareStatement(sql);
+            statement.executeUpdate();
 
-            statement.setInt(1, transactionId);
+            String sql2 = "SELECT * FROM \"Transactions\" WHERE transaction_id = ?";
 
-            ResultSet result = statement.executeQuery();
-            System.out.println("Collected data");
+            statement2 = connection.prepareStatement(sql2);
+            statement2.setInt(1, transactionId);
+            ResultSet result = statement2.executeQuery();
 
             while (result.next()) {
-                description = result.getString("description");
                 amount = result.getInt("amount");
-                dateOfCreation = result.getString("date_of_creation");
                 dateOfExecution = result.getString("date_of_execution");
                 sender = result.getInt("account_number_sender");
                 receiver = result.getInt("account_number_recipient");
-                loanId = result.getInt("loan_id");
             }
 
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-M-d");
-            LocalDate localDateCreation = LocalDate.parse(dateOfCreation, formatter);
             LocalDate localDateExecution = LocalDate.parse(dateOfExecution, formatter);
             LocalDate today = LocalDate.now();
 
             if (localDateExecution.equals(today)) {
-
-                String sql2 = "BEGIN TRANSACTION;"
-                        + "INSERT INTO \"Transactions\" (description, amount, date_of_creation, date_of_execution, account_number_sender, account_number_recipient, loan_id) "
-                        + "VALUES (?, ?, ?, ?, ?, ?, ?);"
-                        + "UPDATE \"Account\" SET amount = amount-? WHERE account_number = ?;"
+                String sql3 = "UPDATE \"Account\" SET amount = amount-? WHERE account_number = ?;"
                         + "UPDATE \"Account\" SET amount = amount+? WHERE account_number = ?;"
-                        + "DELETE FROM \"Stored_Transactions\" WHERE transaction_id = ?;"
+                        + "INSERT INTO \"Processed_Transactions\" (transaction_id) "
+                        + "VALUES (?);"
                         + "COMMIT;";
 
-                statement2 = connection.prepareStatement(sql2);
-
-                statement2.setString(1, description);
-                statement2.setObject(2, amount);
-                statement2.setObject(3, localDateCreation);
-                statement2.setObject(4, localDateExecution);
-                statement2.setInt(5, sender);
-                statement2.setInt(6, receiver);
-                statement2.setInt(7, loanId);
-                statement2.setObject(8, amount);
-                statement2.setInt(9, sender);
-                statement2.setObject(10, amount);
-                statement2.setInt(11, receiver);
-                statement2.setInt(12, transactionId);
-
-                statement2.executeUpdate();
-                System.out.println("Created transaction");
-
-                System.out.println("End of query");
+                statement3 = connection.prepareStatement(sql3);
+                statement3.setObject(1, amount);
+                statement3.setInt(2, sender);
+                statement3.setObject(3, amount);
+                statement3.setInt(4, receiver);
+                statement3.setInt(5, transactionId);
+                statement3.executeUpdate();
 
                 statement.close();
+                statement2.close();
+                statement3.close();
                 connection.commit();
             } else {
                 System.out.println("This transaction is not scheduled for today.");
             }
+            closeConnection();
         }
-        closeConnection();
     }
 }

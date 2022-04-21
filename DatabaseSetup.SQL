@@ -9,9 +9,11 @@ CREATE TABLE "Account"
 (
     account_number integer NOT NULL DEFAULT nextval('test_id_seq12'::regclass),
     amount numeric,
-    account_type text NOT NULL,
+    account_type text,
     opening_date date,
-    CONSTRAINT account_number PRIMARY KEY (account_number)
+    wallet_number integer,
+    CONSTRAINT account_number PRIMARY KEY (account_number),
+    CONSTRAINT wallet_number FOREIGN KEY (wallet_number) REFERENCES"Wallet" (wallet_number)
 )
 
 CREATE TABLE "Client"
@@ -40,34 +42,19 @@ CREATE TABLE "Transactions"
     CONSTRAINT transaction_id PRIMARY KEY (transaction_id),
     CONSTRAINT account_number_recipient FOREIGN KEY (account_number_recipient) REFERENCES "Account" (account_number),
     CONSTRAINT account_number_sender FOREIGN KEY (account_number_sender) REFERENCES "Account" (account_number),
-    CONSTRAINT loan_id FOREIGN KEY (loan_id) REFERENCES "Outstanding_loan" (loan_id)
 )
 
-CREATE TABlE "Stored_Transactions"
+CREATE TABLE "Processed_Transactions"
 (
-    transaction_id integer NOT NULL DEFAULT nextval('test_id_seq6'::regclass),
-    description text,
-    amount integer,
-    date_of_creation date,
-    date_of_execution date,
-    account_number_sender integer,
-    account_number_recipient integer,
-    CONSTRAINT stored_transaction_id PRIMARY KEY (transaction_id),
-    CONSTRAINT stored_account_number_recipient FOREIGN KEY (account_number_sender_stored) REFERENCES "Account" (account_number),
-    CONSTRAINT stored_account_number_sender FOREIGN KEY (account_number_recipient_stored) REFERENCES "Account" (account_number),
-    CONSTRAINT loan_id FOREIGN KEY (loan_id) REFERENCES "Outstanding_loan" (loan_id)
+    transaction_id integer NOT NULL,
+    CONSTRAINT "Processed_Transactions_pkey" PRIMARY KEY (transaction_id),
+    CONSTRAINT transaction_id FOREIGN KEY (transaction_id) REFERENCES "Transactions" (transaction_id)
 )
 
-CREATE TABLE "Wallet DEFAULT nextval('test_id_seq9'::regclass)"
+CREATE TABLE "Wallet"
 (
-    wallet_number integer NOT NULL,
-    account_number_current integer,
-    account_number_savings integer,
-    account_number_invest integer,
-    CONSTRAINT wallet_number PRIMARY KEY (wallet_number),
-    CONSTRAINT account_number_current FOREIGN KEY (account_number_current) REFERENCES "Account" (account_number),
-    CONSTRAINT account_number_invest FOREIGN KEY (account_number_invest) REFERENCES "Account" (account_number),
-    CONSTRAINT accoutn_number_savings FOREIGN KEY (account_number_savings) REFERENCES "Account" (account_number)
+    wallet_number integer NOT NULL DEFAULT nextval('test_id_seq9'::regclass),
+    CONSTRAINT wallet_number PRIMARY KEY (wallet_number)
 )
 
 CREATE TABLE "Outstanding_Loan"

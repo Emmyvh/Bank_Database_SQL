@@ -10,7 +10,6 @@ public class Main {
         Transactions transactions = new Transactions();
         Loan loan = new Loan();
 
-        client.selectSavingsAccount(2);
     }
 
 }

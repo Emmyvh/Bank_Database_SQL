@@ -42,52 +42,19 @@ public class Account {
             int walletNumber) throws SQLException {
 
         LocalDate localDate = LocalDate.of(year, month, day);
-        int accountNumber = 0;
 
         makeConnection();
 
         if (connection != null) {
-            String sql = "INSERT INTO \"Account\" (amount, account_type, opening_date) "
-                    + "VALUES (? ,? ,?);";
+            String sql = "INSERT INTO \"Account\" (amount, account_type, opening_date, wallet_number) "
+                    + "VALUES (? ,? ,?, ?);";
 
             statement = connection.prepareStatement(sql);
-
             statement.setInt(1, amount);
             statement.setString(2, accountType);
             statement.setObject(3, localDate);
-
+            statement.setInt(4, walletNumber);
             statement.executeUpdate();
-            System.out.println("Added account");
-
-            String sql2 = "SELECT MAX (account_number) FROM \"Account\"";
-
-            statement2 = connection.prepareStatement(sql2);
-            ResultSet result = statement2.executeQuery();
-
-            while (result.next()) {
-                accountNumber = result.getInt("max");
-            }
-
-            System.out.println(accountNumber);
-
-            String sql3 = "";
-            if (accountType == "invest") {
-                sql3 = "UPDATE \"Wallet\" SET account_number_invest = ? WHERE wallet_number = ?;";
-            } else if (accountType == "savings") {
-                sql3 = "UPDATE \"Wallet\" SET account_number_savings = ? WHERE wallet_number = ?;";
-            } else if (accountType == "current") {
-                sql3 = "UPDATE \"Wallet\" SET account_number_current = ? WHERE wallet_number = ?;";
-            } else {
-                System.out.println(accountType + " is not a valid account type");
-            }
-
-            statement3 = connection.prepareStatement(sql3);
-
-            statement3.setInt(1, accountNumber);
-            statement3.setInt(2, walletNumber);
-
-            statement3.executeUpdate();
-            System.out.println("Executed query successfully");
 
             statement.close();
             connection.commit();
@@ -97,25 +64,22 @@ public class Account {
     }
 
     public void updateAccount(int accountNumber, int amount, String accountType, int year, int month, int day,
-            int clientNumber) throws SQLException {
+            int walletNumber) throws SQLException {
 
         LocalDate localDate = LocalDate.of(year, month, day);
 
         makeConnection();
 
         if (connection != null) {
-            String sql = "UPDATE \"Account\" SET(amount=?, account_type=?, opening_date=?, client_number=?) WHERE account_number= ?";
+            String sql = "UPDATE \"Account\" SET(amount=?, account_type=?, opening_date=?, wallet_number=?) WHERE account_number= ?";
 
             statement = connection.prepareStatement(sql);
-
             statement.setInt(1, amount);
             statement.setString(2, accountType);
             statement.setObject(3, localDate);
-            statement.setInt(4, clientNumber);
+            statement.setInt(4, walletNumber);
             statement.setInt(5, accountNumber);
-
             statement.executeUpdate();
-            System.out.println("Executed query successfully");
 
             statement.close();
             connection.commit();
@@ -124,48 +88,16 @@ public class Account {
     }
 
     public void deleteAccount(int accountNumber) throws SQLException {
-        String accountType = "";
 
         makeConnection();
 
         if (connection != null) {
 
-            String sql = "SELECT * FROM \"Account\" WHERE account_number= ?;";
+            String sql = "DELETE FROM \"Account\" WHERE account_number = ?;";
 
             statement = connection.prepareStatement(sql);
             statement.setInt(1, accountNumber);
-            ResultSet result = statement.executeQuery();
-
-            while (result.next()) {
-                accountType = result.getString("account_type");
-            }
-            System.out.println("collected data");
-
-            String sql2 = "";
-            if (accountType.equals("invest")) {
-                sql2 = "BEGIN TRANSACTION;"
-                        + "UPDATE \"Wallet\" SET account_number_invest = Null WHERE account_number_invest = ?;"
-                        + "DELETE FROM \"Account\" WHERE account_number = ?;"
-                        + "COMMIT;";
-            } else if (accountType.equals("savings")) {
-                sql2 = "BEGIN TRANSACTION;"
-                        + "UPDATE \"Wallet\" SET account_number_savings = Null WHERE account_number_savings = ?;"
-                        + "DELETE FROM \"Account\" WHERE account_number = ?;"
-                        + "COMMIT;";
-            } else if (accountType.equals("current")) {
-                sql2 = "BEGIN TRANSACTION;"
-                        + "UPDATE \"Wallet\" SET account_number_current = Null WHERE account_number_current = ?;"
-                        + "DELETE FROM \"Account\" WHERE account_number = ?;"
-                        + "COMMIT;";
-            } else {
-                System.out.println("error in retrieved string");
-            }
-
-            statement2 = connection.prepareStatement(sql2);
-            statement2.setInt(1, accountNumber);
-            statement2.setInt(2, accountNumber);
-            statement2.executeQuery();
-            System.out.println("Executed query successfully");
+            statement.executeUpdate();
 
             statement.close();
             connection.commit();
@@ -174,6 +106,12 @@ public class Account {
     }
 
     public void selectAccount(int number) throws SQLException {
+
+        int accountNumber = 0;
+        int amount = 0;
+        String accountType = "";
+        String openingDate = "";
+        int walletNumber = 0;
 
         makeConnection();
 
@@ -185,20 +123,104 @@ public class Account {
             statement.setInt(1, number);
 
             ResultSet result = statement.executeQuery();
-            System.out.println("Executed query successfully");
 
             while (result.next()) {
-                int accountNumber = result.getInt("account_number");
-                String amount = result.getString("amount");
-                String accountType = result.getString("account_type");
-                String openingDate = result.getString("opening_date");
-
-                System.out.println(
-                        accountNumber + " " + amount + " " + accountType + " " + openingDate);
+                accountNumber = result.getInt("account_number");
+                amount = result.getInt("amount");
+                accountType = result.getString("account_type");
+                openingDate = result.getString("opening_date");
+                walletNumber = result.getInt("wallet_number");
             }
+
+            System.out.println(
+                    accountNumber + " " + amount + " " + accountType + " " + openingDate + " " + walletNumber);
+
             statement.close();
             connection.commit();
         }
         closeConnection();
     }
+
+    public void getOwner(int accountNumber) throws SQLException {
+
+        int owner = 0;
+
+        makeConnection();
+
+        if (connection != null) {
+            String sql = "SELECT \"Account\".wallet_number, \"Wallet\".wallet_number, \"Client\".client_number, \"Client\".wallet_number "
+                    + "FROM \"Account\" "
+                    + "INNER JOIN \"Wallet\" ON \"Account\".wallet_number = \"Wallet\".wallet_number "
+                    + "INNER JOIN \"Client\" ON \"Wallet\".wallet_number= \"Account\".wallet_number "
+                    + "WHERE \"Account\".account_number = ? ";
+
+            statement = connection.prepareStatement(sql);
+            statement.setInt(1, accountNumber);
+            ResultSet result = statement.executeQuery();
+
+            while (result.next()) {
+                owner = result.getInt("client_number");
+            }
+
+            System.out.println("account owner: " + owner);
+
+            statement.close();
+            connection.commit();
+        }
+        closeConnection();
+    }
+
+    public void transactionTotal(int accountNumber) throws SQLException {
+
+        int amountSend = 0;
+        int amountSendTotal = 0;
+        int amountReceived = 0;
+        int amountReceivedTotal = 0;
+        int total = 0;
+
+        makeConnection();
+
+        if (connection != null) {
+            String sql = "SELECT \"Account\".account_number, \"Transactions\".account_number_sender, \"Transactions\".amount "
+                    + "FROM \"Account\" "
+                    + "INNER JOIN \"Transactions\" ON \"Account\".account_number= \"Transactions\".account_number_sender "
+                    + "WHERE \"Account\".account_number = ? ";
+
+            statement = connection.prepareStatement(sql);
+            statement.setInt(1, accountNumber);
+            ResultSet result = statement.executeQuery();
+
+            while (result.next()) {
+                amountSend = result.getInt("amount");
+
+                total = total - amountSend;
+                amountSendTotal = amountSendTotal + amountSend;
+            }
+
+            String sql2 = "SELECT \"Account\".account_number, \"Transactions\".account_number_recipient, \"Transactions\".amount "
+                    + "FROM \"Account\" "
+                    + "INNER JOIN \"Transactions\" ON \"Account\".account_number= \"Transactions\".account_number_recipient "
+                    + "WHERE \"Account\".account_number = ? ";
+
+            statement2 = connection.prepareStatement(sql2);
+            statement2.setInt(1, accountNumber);
+            ResultSet result2 = statement2.executeQuery();
+
+            while (result2.next()) {
+                amountReceived = result2.getInt("amount");
+
+                total = total + amountReceived;
+                amountReceivedTotal = amountReceivedTotal + amountReceived;
+            }
+
+            System.out.println("account number: " + accountNumber + ", send: -" + amountSendTotal + ", received: "
+                    + amountReceivedTotal + ", transaction total: " + total);
+
+            statement.close();
+            statement2.close();
+            connection.commit();
+        }
+        closeConnection();
+    }
+
 }

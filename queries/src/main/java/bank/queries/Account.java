@@ -170,7 +170,7 @@ public class Account {
         closeConnection();
     }
 
-    public void transactionTotal(int accountNumber) throws SQLException {
+    public void transactionTotalBalance(int accountNumber) throws SQLException {
 
         int amountSend = 0;
         int amountSendTotal = 0;
@@ -218,6 +218,53 @@ public class Account {
 
             statement.close();
             statement2.close();
+            connection.commit();
+        }
+        closeConnection();
+    }
+
+    public void transactions(int accountNumber) throws SQLException {
+
+        int id = 0;
+        String description = "";
+        int amount = 0;
+        String dateCreation = "";
+        String dateExecution = "";
+        int sender = 0;
+        int recipient = 0;
+        int loanId = 0;
+
+        makeConnection();
+
+        if (connection != null) {
+            String sql = "SELECT \"Transactions\".transaction_id, \"Transactions\".description, \"Transactions\".amount, "
+                    + "\"Transactions\".date_of_creation, \"Transactions\".date_of_execution, \"Transactions\".account_number_sender, "
+                    + "\"Transactions\".account_number_recipient, \"Transactions\".loan_id "
+                    + "FROM \"Account\" "
+                    + "INNER JOIN \"Transactions\" ON \"Account\".account_number= \"Transactions\".account_number_recipient OR \"Account\".account_number= \"Transactions\".account_number_sender "
+                    + "WHERE \"Account\".account_number = ? ";
+
+            statement = connection.prepareStatement(sql);
+            statement.setInt(1, accountNumber);
+            ResultSet result = statement.executeQuery();
+
+            while (result.next()) {
+                id = result.getInt("transaction_id");
+                description = result.getString("description");
+                amount = result.getInt("amount");
+                dateCreation = result.getString("date_of_creation");
+                dateExecution = result.getString("date_of_execution");
+                sender = result.getInt("account_number_sender");
+                recipient = result.getInt("account_number_recipient");
+                loanId = result.getInt("loan_id");
+
+                System.out.println("account number: " + accountNumber + ", transaction id: " + id + ", description: "
+                        + description + ", amount: " + amount + ", date of creation: " + dateCreation
+                        + ", date of Execution: " + dateExecution + ", account of sender: " + sender
+                        + ", account of recipient: " + recipient + ", loan id (optional): " + loanId);
+            }
+
+            statement.close();
             connection.commit();
         }
         closeConnection();

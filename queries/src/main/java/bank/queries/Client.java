@@ -220,7 +220,7 @@ public class Client {
         closeConnection();
     }
 
-    public void transactionTotal(int clientNumber) throws SQLException {
+    public void transactionTotalBalance(int clientNumber) throws SQLException {
 
         int amountSend = 0;
         int amountSendTotal = 0;
@@ -252,7 +252,7 @@ public class Client {
             String sql2 = "SELECT \"Client\".client_number, \"Wallet\".wallet_number, \"Account\".wallet_number, \"Account\".account_number, \"Transactions\".account_number_recipient, \"Transactions\".amount "
                     + "FROM \"Client\" "
                     + "INNER JOIN \"Wallet\" ON \"Client\".wallet_number = \"Wallet\".wallet_number "
-                    + "INNER JOIN \"Account\" ON \"Wallet\".wallet_number= \"Account\".wallet_number "
+                    + "INNER JOIN \"Account\" ON \"Wallet\".wallet_number = \"Account\".wallet_number "
                     + "INNER JOIN \"Transactions\" ON \"Account\".account_number= \"Transactions\".account_number_recipient "
                     + "WHERE \"Client\".client_number = ? ";
 
@@ -272,6 +272,55 @@ public class Client {
 
             statement.close();
             statement2.close();
+            connection.commit();
+        }
+        closeConnection();
+    }
+
+    public void transactions(int clientNumber) throws SQLException {
+
+        int id = 0;
+        String description = "";
+        int amount = 0;
+        String dateCreation = "";
+        String dateExecution = "";
+        int sender = 0;
+        int recipient = 0;
+        int loanId = 0;
+
+        makeConnection();
+
+        if (connection != null) {
+            String sql = "SELECT \"Transactions\".transaction_id, \"Transactions\".description, \"Transactions\".amount, "
+                    + "\"Transactions\".date_of_creation, \"Transactions\".date_of_execution, \"Transactions\".account_number_sender, "
+                    + "\"Transactions\".account_number_recipient, \"Transactions\".loan_id "
+                    + "FROM \"Client\" "
+                    + "INNER JOIN \"Wallet\" ON \"Client\".wallet_number = \"Wallet\".wallet_number "
+                    + "INNER JOIN \"Account\" ON \"Wallet\".wallet_number = \"Account\".wallet_number "
+                    + "INNER JOIN \"Transactions\" ON \"Account\".account_number= \"Transactions\".account_number_recipient OR \"Account\".account_number= \"Transactions\".account_number_sender "
+                    + "WHERE \"Client\".client_number = ? ";
+
+            statement = connection.prepareStatement(sql);
+            statement.setInt(1, clientNumber);
+            ResultSet result = statement.executeQuery();
+
+            while (result.next()) {
+                id = result.getInt("transaction_id");
+                description = result.getString("description");
+                amount = result.getInt("amount");
+                dateCreation = result.getString("date_of_creation");
+                dateExecution = result.getString("date_of_execution");
+                sender = result.getInt("account_number_sender");
+                recipient = result.getInt("account_number_recipient");
+                loanId = result.getInt("loan_id");
+
+                System.out.println("client number: " + clientNumber + ", transaction id: " + id + ", description: "
+                        + description + ", amount: " + amount + ", date of creation: " + dateCreation
+                        + ", date of Execution: " + dateExecution + ", account of sender: " + sender
+                        + ", account of recipient: " + recipient + ", loan id (optional): " + loanId);
+            }
+
+            statement.close();
             connection.commit();
         }
         closeConnection();

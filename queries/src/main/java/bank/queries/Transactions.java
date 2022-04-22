@@ -39,11 +39,9 @@ public class Transactions {
         }
     }
 
-    public void directly(String description, int amount, int year, int month, int day,
-            int year2, int month2, int day2, int sender, int receiver) throws SQLException {
+    public void direct(String description, int amount, int sender, int receiver) throws SQLException {
 
-        LocalDate localDate = LocalDate.of(year, month, day);
-        LocalDate localDate2 = LocalDate.of(year2, month2, day2);
+        LocalDate localDate = LocalDate.now();
         int transactionId = 0;
 
         makeConnection();
@@ -59,7 +57,7 @@ public class Transactions {
             statement.setString(1, description);
             statement.setInt(2, amount);
             statement.setObject(3, localDate);
-            statement.setObject(4, localDate2);
+            statement.setObject(4, localDate);
             statement.setInt(5, sender);
             statement.setInt(6, receiver);
             statement.setObject(7, amount);
@@ -94,10 +92,10 @@ public class Transactions {
     }
 
     public void delayed(String description, int amount, int year, int month, int day,
-            int year2, int month2, int day2, int sender, int receiver) throws SQLException {
+            int sender, int receiver) throws SQLException {
 
-        LocalDate localDate = LocalDate.of(year, month, day);
-        LocalDate localDate2 = LocalDate.of(year2, month2, day2);
+        LocalDate localDate = LocalDate.now();
+        LocalDate localDate2 = LocalDate.of(year, month, day);
 
         makeConnection();
 

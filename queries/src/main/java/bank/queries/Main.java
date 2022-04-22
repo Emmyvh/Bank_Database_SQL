@@ -10,6 +10,7 @@ public class Main {
         Transactions transactions = new Transactions();
         Loan loan = new Loan();
 
+        loan.createLoan(27, 26, 2022, 4, 27, 10, 2, 1);
     }
 
 }

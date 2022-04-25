@@ -16,6 +16,7 @@ public class Loan {
     PreparedStatement statement4 = null;
     PreparedStatement statement5 = null;
     PreparedStatement statement6 = null;
+    PreparedStatement statement7 = null;
 
     public void makeConnection() {
         try {
@@ -50,6 +51,7 @@ public class Loan {
         LocalDate nextInstalment = creation.plusDays(paymentIntervalDays);
         int numberOfIntervals = amountOriginal / paymentIntervalAmount;
         int loanId = 0;
+        int transactionId = 0;
 
         makeConnection();
 
@@ -94,7 +96,16 @@ public class Loan {
             statement3.setInt(7, loanId);
             statement3.executeUpdate();
 
-            String sql4 = "UPDATE \"Account\" SET amount = amount - ? WHERE account_number = ?;"
+            String sql4 = "SELECT MAX (transaction_id) FROM \"Transactions\"";
+            statement4 = connection.prepareStatement(sql4);
+            ResultSet result2 = statement4.executeQuery();
+            while (result2.next()) {
+                transactionId = result2.getInt("max");
+            }
+
+            String sql5 = "INSERT INTO \"Processed_Transactions\" (transaction_id)"
+                    + "VALUES (?);"
+                    + "UPDATE \"Account\" SET amount = amount - ? WHERE account_number = ?;"
                     + "UPDATE \"Account\" SET amount = amount + ? WHERE account_number = ?;"
                     + "INSERT INTO \"Transactions\" (description, amount, date_of_creation, date_of_execution, account_number_sender, account_number_recipient, loan_id)"
                     + "VALUES (?, ?, ?, ?, ?, ?, ?);";
@@ -102,47 +113,48 @@ public class Loan {
             LocalDate newNextInstalment = nextInstalment;
 
             System.out.println("checkpoint 4");
-            statement4 = connection.prepareStatement(sql4);
-            statement4.setInt(1, amountOriginal);
-            statement4.setInt(2, contraAccount);
-            statement4.setInt(3, amountOriginal);
-            statement4.setInt(4, accountNumber);
-            statement4.setString(5, "loan instalment");
-            statement4.setInt(6, paymentIntervalAmount);
-            statement4.setObject(7, creation);
-            statement4.setObject(8, newNextInstalment);
-            statement4.setInt(9, accountNumber);
-            statement4.setInt(10, contraAccount);
-            statement4.setInt(11, loanId);
-            statement4.executeUpdate();
+            statement5 = connection.prepareStatement(sql5);
+            statement5.setInt(1, transactionId);
+            statement5.setInt(2, amountOriginal);
+            statement5.setInt(3, contraAccount);
+            statement5.setInt(4, amountOriginal);
+            statement5.setInt(5, accountNumber);
+            statement5.setString(6, "loan instalment");
+            statement5.setInt(7, paymentIntervalAmount);
+            statement5.setObject(8, creation);
+            statement5.setObject(9, newNextInstalment);
+            statement5.setInt(10, accountNumber);
+            statement5.setInt(11, contraAccount);
+            statement5.setInt(12, loanId);
+            statement5.executeUpdate();
 
             numberOfIntervals--;
 
             System.out.println("checkpoint 5");
 
-            String sql5 = "INSERT INTO \"Transactions\" (description, amount, date_of_creation, date_of_execution, account_number_sender, account_number_recipient, loan_id)"
+            String sql6 = "INSERT INTO \"Transactions\" (description, amount, date_of_creation, date_of_execution, account_number_sender, account_number_recipient, loan_id)"
                     + "VALUES (?, ?, ?, ?, ?, ?, ?);";
 
             while (numberOfIntervals > 0) {
                 newNextInstalment = newNextInstalment.plusDays(paymentIntervalDays);
 
-                statement5 = connection.prepareStatement(sql5);
-                statement5.setString(1, "loan instalment");
-                statement5.setInt(2, paymentIntervalAmount);
-                statement5.setObject(3, creation);
-                statement5.setObject(4, newNextInstalment);
-                statement5.setInt(5, accountNumber);
-                statement5.setInt(6, contraAccount);
-                statement5.setInt(7, loanId);
-                statement5.executeUpdate();
+                statement6 = connection.prepareStatement(sql6);
+                statement6.setString(1, "loan instalment");
+                statement6.setInt(2, paymentIntervalAmount);
+                statement6.setObject(3, creation);
+                statement6.setObject(4, newNextInstalment);
+                statement6.setInt(5, accountNumber);
+                statement6.setInt(6, contraAccount);
+                statement6.setInt(7, loanId);
+                statement6.executeUpdate();
 
                 numberOfIntervals--;
             }
 
-            String sql6 = "COMMIT;";
+            String sql7 = "COMMIT;";
 
-            statement6 = connection.prepareStatement(sql6);
-            statement6.executeUpdate();
+            statement7 = connection.prepareStatement(sql7);
+            statement7.executeUpdate();
 
             statement.close();
             statement2.close();
@@ -150,6 +162,7 @@ public class Loan {
             statement4.close();
             statement5.close();
             statement6.close();
+            statement7.close();
             connection.commit();
         }
         closeConnection();

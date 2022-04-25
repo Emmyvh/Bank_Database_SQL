@@ -26,7 +26,6 @@ CREATE TABLE "Client"
     house_number integer,
     zip_code integer,
     town text,
-    wallet_number integer,
     CONSTRAINT client_number PRIMARY KEY (client_number)
 )
 
@@ -54,7 +53,9 @@ CREATE TABLE "Processed_Transactions"
 CREATE TABLE "Wallet"
 (
     wallet_number integer NOT NULL DEFAULT nextval('test_id_seq9'::regclass),
-    CONSTRAINT wallet_number PRIMARY KEY (wallet_number)
+    client_number integer,
+    CONSTRAINT wallet_number PRIMARY KEY (wallet_number),
+    CONSTRAINT client_number FOREIGN KEY (client_number) REFERENCES "Client" (client_number)
 )
 
 CREATE TABLE "Outstanding_Loan"
@@ -68,7 +69,6 @@ CREATE TABLE "Outstanding_Loan"
     payment_interval_amount numeric,
     remaining_amount numeric,
     payment_interval_days numeric,
-    date_next_installment date,
     CONSTRAINT loan_id PRIMARY KEY (loan_id),
     CONSTRAINT account_number FOREIGN KEY (account_number_loaner) REFERENCES "Account" (account_number),
     CONSTRAINT account_number_contra FOREIGN KEY (account_number_contra) REFERENCES "Account" (account_number)

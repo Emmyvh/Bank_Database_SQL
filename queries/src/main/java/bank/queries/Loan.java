@@ -58,8 +58,8 @@ public class Loan {
         if (connection != null) {
 
             String sql = "BEGIN TRANSACTION;"
-                    + "INSERT INTO \"Outstanding_Loan\" (account_number, contra_account, contract_date, maturity_date, original_amount, payment_interval_amount, payment_interval_days, date_next_instalment)"
-                    + "VALUES (?, ?, ?, ?, ?, ?, ?, ?); ";
+                    + "INSERT INTO \"Outstanding_Loan\" (account_number, contra_account, contract_date, maturity_date, original_amount, payment_interval_amount, payment_interval_days)"
+                    + "VALUES (?, ?, ?, ?, ?, ?, ?); ";
 
             System.out.println("checkpoint 1");
             statement = connection.prepareStatement(sql);
@@ -70,7 +70,6 @@ public class Loan {
             statement.setInt(5, amountOriginal);
             statement.setInt(6, paymentIntervalAmount);
             statement.setInt(7, paymentIntervalDays);
-            statement.setObject(8, nextInstalment);
             statement.executeUpdate();
 
             String sql2 = "SELECT MAX (loan_id) FROM \"Outstanding_Loan\"";
@@ -110,8 +109,6 @@ public class Loan {
                     + "INSERT INTO \"Transactions\" (description, amount, date_of_creation, date_of_execution, account_number_sender, account_number_recipient, loan_id)"
                     + "VALUES (?, ?, ?, ?, ?, ?, ?);";
 
-            LocalDate newNextInstalment = nextInstalment;
-
             System.out.println("checkpoint 4");
             statement5 = connection.prepareStatement(sql5);
             statement5.setInt(1, transactionId);
@@ -122,7 +119,7 @@ public class Loan {
             statement5.setString(6, "loan instalment");
             statement5.setInt(7, paymentIntervalAmount);
             statement5.setObject(8, creation);
-            statement5.setObject(9, newNextInstalment);
+            statement5.setObject(9, nextInstalment);
             statement5.setInt(10, accountNumber);
             statement5.setInt(11, contraAccount);
             statement5.setInt(12, loanId);
@@ -136,13 +133,13 @@ public class Loan {
                     + "VALUES (?, ?, ?, ?, ?, ?, ?);";
 
             while (numberOfIntervals > 0) {
-                newNextInstalment = newNextInstalment.plusDays(paymentIntervalDays);
+                nextInstalment = nextInstalment.plusDays(paymentIntervalDays);
 
                 statement6 = connection.prepareStatement(sql6);
                 statement6.setString(1, "loan instalment");
                 statement6.setInt(2, paymentIntervalAmount);
                 statement6.setObject(3, creation);
-                statement6.setObject(4, newNextInstalment);
+                statement6.setObject(4, nextInstalment);
                 statement6.setInt(5, accountNumber);
                 statement6.setInt(6, contraAccount);
                 statement6.setInt(7, loanId);
@@ -185,7 +182,7 @@ public class Loan {
                     + "\"Transactions\".date_of_creation, \"Transactions\".date_of_execution, \"Transactions\".account_number_sender, "
                     + "\"Transactions\".account_number_recipient, \"Transactions\".loan_id "
                     + "FROM \"Outstanding_Loan\" "
-                    + "INNER JOIN \"Transactions\" ON \"Outstanding_Loan\".loan_id= \"Transactions\".loan_id "
+                    + "INNER JOIN \"Transactions\" ON \"Outstanding_Loan\".loan_id = \"Transactions\".loan_id "
                     + "WHERE \"Outstanding_Loan\".loan_id = ? ";
 
             statement = connection.prepareStatement(sql);

@@ -38,37 +38,18 @@ public class Wallet {
     }
 
     public void createWallet(int clientNumber) throws SQLException {
-        int walletNumber = 0;
 
         makeConnection();
 
         if (connection != null) {
-            String sql = "BEGIN TRANSACTION;"
-                    + "INSERT INTO \"Wallet\" ";
+            String sql = "INSERT INTO \"Wallet\" (client_number) "
+                    + "VALUES (?);";
 
             statement = connection.prepareStatement(sql);
-            statement.executeUpdate();
-
-            String sql2 = "SELECT MAX (wallet_number) FROM \"Wallet\"";
-
-            statement2 = connection.prepareStatement(sql2);
-            ResultSet result = statement2.executeQuery();
-
-            while (result.next()) {
-                walletNumber = result.getInt("max");
-            }
-
-            String sql3 = "UPDATE \"Client\" SET wallet_number = ? WHERE client_number = ?;"
-                    + "COMMIT;";
-
-            statement3 = connection.prepareStatement(sql3);
-            statement3.setInt(1, walletNumber);
-            statement3.setInt(2, clientNumber);
+            statement.setInt(1, clientNumber);
             statement.executeUpdate();
 
             statement.close();
-            statement2.close();
-            statement3.close();
             connection.commit();
         }
         closeConnection();
@@ -79,14 +60,10 @@ public class Wallet {
         makeConnection();
 
         if (connection != null) {
-            String sql = "BEGIN TRANSACTION;"
-                    + "UPDATE \"Client\" SET wallet_number = Null WHERE wallet_number = ?;"
-                    + "DELETE FROM \"Wallet\" WHERE wallet_number= ?; "
-                    + "COMMIT;";
+            String sql = "DELETE FROM \"Wallet\" WHERE wallet_number = ?";
 
             statement = connection.prepareStatement(sql);
             statement.setInt(1, walletNumber);
-            statement.setInt(2, walletNumber);
             statement.executeUpdate();
 
             statement.close();
@@ -95,7 +72,36 @@ public class Wallet {
         closeConnection();
     }
 
-    public void balance(int walletNumber) throws SQLException {
+    public void getAccounts(int walletNumber) throws SQLException {
+        int account = 0;
+        String type = "";
+
+        makeConnection();
+
+        if (connection != null) {
+            String sql = "SELECT \"Account\".account_number, \"Account\".account_type "
+                    + "FROM \"Wallet\" "
+                    + "INNER JOIN \"Account\" ON \"Wallet\".wallet_number = \"Account\".wallet_number "
+                    + "WHERE \"Wallet\".wallet_number = ? ";
+
+            statement = connection.prepareStatement(sql);
+            statement.setInt(1, walletNumber);
+            ResultSet result = statement.executeQuery();
+
+            System.out.println("wallet number: " + walletNumber);
+            while (result.next()) {
+                account = result.getInt("account_number");
+                type = result.getString("account_type");
+                System.out.println("account: " + account + ", type: " + type);
+            }
+
+            statement.close();
+            connection.commit();
+        }
+        closeConnection();
+    }
+
+    public void getBalance(int walletNumber) throws SQLException {
 
         int amount = 0;
         int total = 0;
@@ -119,6 +125,54 @@ public class Wallet {
             }
 
             System.out.println("wallet number: " + walletNumber + ", account value: " + total);
+
+            statement.close();
+            connection.commit();
+        }
+        closeConnection();
+    }
+
+    public void getTransactions(int walletNumber) throws SQLException {
+
+        int id = 0;
+        String description = "";
+        int amount = 0;
+        String dateCreation = "";
+        String dateExecution = "";
+        int sender = 0;
+        int recipient = 0;
+        int loanId = 0;
+
+        makeConnection();
+
+        if (connection != null) {
+            String sql = "SELECT \"Transactions\".transaction_id, \"Transactions\".description, \"Transactions\".amount, "
+                    + "\"Transactions\".date_of_creation, \"Transactions\".date_of_execution, \"Transactions\".account_number_sender, "
+                    + "\"Transactions\".account_number_recipient, \"Transactions\".loan_id "
+                    + "FROM \"Wallet\" "
+                    + "INNER JOIN \"Account\" ON \"Wallet\".wallet_number = \"Account\".wallet_number "
+                    + "INNER JOIN \"Transactions\" ON \"Account\".account_number= \"Transactions\".account_number_recipient OR \"Account\".account_number= \"Transactions\".account_number_sender "
+                    + "WHERE \"Wallet\".wallet_number = ? ";
+
+            statement = connection.prepareStatement(sql);
+            statement.setInt(1, walletNumber);
+            ResultSet result = statement.executeQuery();
+
+            while (result.next()) {
+                id = result.getInt("transaction_id");
+                description = result.getString("description");
+                amount = result.getInt("amount");
+                dateCreation = result.getString("date_of_creation");
+                dateExecution = result.getString("date_of_execution");
+                sender = result.getInt("account_number_sender");
+                recipient = result.getInt("account_number_recipient");
+                loanId = result.getInt("loan_id");
+
+                System.out.println("wallet number: " + walletNumber + ", transaction id: " + id + ", description: "
+                        + description + ", amount: " + amount + ", date of creation: " + dateCreation
+                        + ", date of Execution: " + dateExecution + ", account of sender: " + sender
+                        + ", account of recipient: " + recipient + ", loan id (optional): " + loanId);
+            }
 
             statement.close();
             connection.commit();

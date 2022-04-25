@@ -141,7 +141,7 @@ public class Account {
         closeConnection();
     }
 
-    public void getOwner(int accountNumber) throws SQLException {
+    public void getClient(int accountNumber) throws SQLException {
 
         int owner = 0;
 
@@ -170,7 +170,7 @@ public class Account {
         closeConnection();
     }
 
-    public void transactionTotalBalance(int accountNumber) throws SQLException {
+    public void getTransactionTotalBalance(int accountNumber) throws SQLException {
 
         int amountSend = 0;
         int amountSendTotal = 0;
@@ -223,7 +223,7 @@ public class Account {
         closeConnection();
     }
 
-    public void transactions(int accountNumber) throws SQLException {
+    public void getTransactions(int accountNumber) throws SQLException {
 
         int id = 0;
         String description = "";

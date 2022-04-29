@@ -39,7 +39,7 @@ public class Transactions {
         }
     }
 
-    public void direct(String description, int amount, int sender, int receiver) throws SQLException {
+    public void setDirect(String description, int amount, int sender, int receiver) throws SQLException {
 
         LocalDate localDate = LocalDate.now();
         int transactionId = 0;
@@ -91,7 +91,7 @@ public class Transactions {
         }
     }
 
-    public void delayed(String description, int amount, int year, int month, int day,
+    public void setDelayed(String description, int amount, int year, int month, int day,
             int sender, int receiver) throws SQLException {
 
         LocalDate localDate = LocalDate.now();

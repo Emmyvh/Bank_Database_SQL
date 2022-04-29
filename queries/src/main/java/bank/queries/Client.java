@@ -176,7 +176,7 @@ public class Client {
         closeConnection();
     }
 
-    public void balance(int clientNumber) throws SQLException {
+    public void getBalance(int clientNumber) throws SQLException {
 
         int amount = 0;
         int total = 0;
@@ -208,7 +208,7 @@ public class Client {
         closeConnection();
     }
 
-    public void transactionTotalBalance(int clientNumber) throws SQLException {
+    public void getTransactionTotalBalance(int clientNumber) throws SQLException {
 
         int amountSend = 0;
         int amountSendTotal = 0;
@@ -265,7 +265,7 @@ public class Client {
         closeConnection();
     }
 
-    public void transactions(int clientNumber) throws SQLException {
+    public void getTransactions(int clientNumber) throws SQLException {
 
         int id = 0;
         String description = "";
@@ -314,7 +314,7 @@ public class Client {
         closeConnection();
     }
 
-    public void loans(int clientNumber) throws SQLException {
+    public void getLoans(int clientNumber) throws SQLException {
 
         int loanId = 0;
         int account = 0;

@@ -165,7 +165,7 @@ public class Loan {
         closeConnection();
     }
 
-    public void transactions(int loanId) throws SQLException {
+    public void getTransactions(int loanId) throws SQLException {
 
         int id = 0;
         String description = "";
